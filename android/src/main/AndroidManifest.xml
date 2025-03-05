@@ -1,3 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.example.snap_lib">
+  
+  <application>
+    <activity android:name=".NewActivity" 
+          android:theme="@style/Theme.AppCompat" />
+
+    </application>
 </manifest>
