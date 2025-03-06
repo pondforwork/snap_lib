@@ -59,13 +59,21 @@ object ImageProcessingUtils {
         return mean.`val`[0]
     }
 
-    fun calculateGlare(mat: Mat,glareAreaRule:Double = 500.0): Double {
+    fun calculateGlare(
+        mat: Mat,
+        glareAreaRule: Double = 500.0,  // ค่าขั้นต่ำของพื้นที่แสงสะท้อนที่ต้องนำมาคำนวณ
+        thresholdValue: Double = 230.0, // ค่า Threshold สำหรับแปลงเป็น Binary Image
+        maxGlareThreshold: Double = 100.0 // ค่าสูงสุดของ Glare ที่อนุญาตให้ส่งออก
+    ): Double {
         val gray = Mat()
         Imgproc.cvtColor(mat, gray, Imgproc.COLOR_BGR2GRAY)
+
         val binary = Mat()
-        Imgproc.threshold(gray, binary, 230.0, 255.0, Imgproc.THRESH_BINARY)
+        Imgproc.threshold(gray, binary, thresholdValue, 255.0, Imgproc.THRESH_BINARY)
+
         val contours = ArrayList<MatOfPoint>()
         Imgproc.findContours(binary, contours, Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
+
         var glareArea = 0.0
         for (contour in contours) {
             val area = Imgproc.contourArea(contour)
@@ -73,9 +81,18 @@ object ImageProcessingUtils {
                 glareArea += area
             }
         }
+
         val totalArea = mat.width() * mat.height()
-        return (glareArea / totalArea) * 100
+        gray.release()
+        binary.release()
+
+        // แปลงเป็นเปอร์เซ็นต์
+        val glarePercentage = (glareArea / totalArea) * 100
+
+        // ถ้าค่ามากกว่าค่าสูงสุดที่กำหนด ให้ใช้ค่า maxGlareThreshold แทน
+        return glarePercentage.coerceAtMost(maxGlareThreshold)
     }
+
 
     fun calculateSNR(mat: Mat): Double {
         val grayMat = Mat()
