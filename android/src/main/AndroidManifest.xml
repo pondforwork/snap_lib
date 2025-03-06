@@ -2,8 +2,7 @@
   package="com.example.snap_lib">
   
   <application>
-    <activity android:name=".NewActivity" 
-          android:theme="@style/Theme.AppCompat" />
+    <activity android:name=".NewActivity" android:theme="@style/Theme.SnapLib" />
 
     </application>
 </manifest>

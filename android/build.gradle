@@ -50,7 +50,10 @@ android {
     dependencies {
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.mockito:mockito-core:5.0.0")
-        implementation "androidx.appcompat:appcompat:1.4.1"
+
+        implementation "androidx.appcompat:appcompat:1.7.0"
+
+
 
         // ส่วนของ Jetpack Compose
         implementation("androidx.activity:activity-compose")  // Jetpack Activity Compose integration
@@ -73,5 +76,16 @@ android {
                showStandardStreams = true
             }
         }
+    }
+
+    // เปิดใช้งาน Compose ใน Android Studio
+    buildFeatures {
+        compose true
+    }
+
+    // เดิมไม่มี 
+    // กำหนดให้ใช้ version ที่รองรับ Kotlin Version 1.8.22
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.8" 
     }
 }

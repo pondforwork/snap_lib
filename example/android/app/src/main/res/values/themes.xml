@@ -1,0 +1,9 @@
+<resources>
+
+    <style name="Theme.SnapLib" parent="Theme.AppCompat.DayNight">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.Android" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
