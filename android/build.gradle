@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.1.4")
+        classpath("com.android.tools.build:gradle:8.1.0")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
@@ -51,8 +51,7 @@ android {
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.mockito:mockito-core:5.0.0")
 
-
-        implementation project(':opencv')
+        implementation "androidx.appcompat:appcompat:1.7.0"
 
         // ส่วนของ Jetpack Compose
         implementation("androidx.activity:activity-compose")  // Jetpack Activity Compose integration
