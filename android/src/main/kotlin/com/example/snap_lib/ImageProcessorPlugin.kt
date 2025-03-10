@@ -66,17 +66,14 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "calculateBrightness" -> {
                 val imageBytes = call.argument<ByteArray>("image")
                 if (imageBytes != null) {
-                    GlobalScope.launch(Dispatchers.IO) {
-                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                        val mat = bitmapToMat(bitmap)
-                        val brightness = calculateBrightness(mat)
-                        withContext(Dispatchers.Main) {
-                            result.success(brightness)
-                        }
-                    }
+                    val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                    val mat = bitmapToMat(bitmap)
+                    val brightness = calculateBrightness(mat)
+                    result.success(brightness)
                 } else {
                     result.error("ERROR", "Invalid image input", null)
                 }
+
             }
 
             "calculateGlare" -> {

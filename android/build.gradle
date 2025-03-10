@@ -52,6 +52,8 @@ android {
         testImplementation("org.mockito:mockito-core:5.0.0")
 
         implementation "androidx.appcompat:appcompat:1.7.0"
+        // import oprn cv moudule file
+        implementation project(':opencv')  
 
         // ส่วนของ Jetpack Compose
         implementation("androidx.activity:activity-compose")  // Jetpack Activity Compose integration

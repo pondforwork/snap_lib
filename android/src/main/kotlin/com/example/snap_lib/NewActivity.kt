@@ -1,4 +1,5 @@
 package com.example.snap_lib
+
 // Import statements for Android and Compose
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,10 +19,7 @@ import androidx.camera.core.CameraSelector
 import androidx.compose.ui.platform.LocalLifecycleOwner
 
 // Import statements for Compose UI elements
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 
@@ -32,9 +30,8 @@ import android.os.Build
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.checkSelfPermission
+import org.opencv.android.OpenCVLoader
 
 class NewActivity : AppCompatActivity() {
 
@@ -43,14 +40,26 @@ class NewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // ✅ Initialize OpenCV and ImageProcessorPlugin
+        initializePlugin()
+
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     Greeting("Android", this)
-                     CameraPreview()
+                    CameraPreview()
                 }
             }
         }
+    }
+
+    private fun initializePlugin() {
+        if (!OpenCVLoader.initDebug()) {
+            Log.e("OpenCV", "OpenCV initialization failed.")
+        } else {
+            Log.d("OpenCV", "OpenCV initialized successfully.")
+        }
+        Log.d("Plugin", "ImageProcessorPlugin initialized.")
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -60,7 +69,7 @@ class NewActivity : AppCompatActivity() {
                 MaterialTheme {
                     Surface(modifier = Modifier.fillMaxSize()) {
                         Greeting("Android", this@NewActivity)
-                         CameraPreview()
+                        CameraPreview()
                     }
                 }
             }
@@ -118,23 +127,3 @@ fun Greeting(name: String, activity: AppCompatActivity) {
         }
     }
 }
-
-private fun checkPermissions(activity: AppCompatActivity) {
-    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), 0)
-    }
-}
-
-private fun checkAndRequestCameraPermission(activity: AppCompatActivity, requestCode: Int) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("NativeDemo", "Permission not granted. Requesting permission.")
-            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), requestCode)
-        } else {
-            Log.d("NativeDemo", "Permission already granted. Proceeding with photo capture.")
-            // capturePhoto()
-        }
-    }
-}
-
-

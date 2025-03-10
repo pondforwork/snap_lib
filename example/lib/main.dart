@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -29,11 +30,11 @@ class ImageProcessorScreen extends StatefulWidget {
 }
 
 class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
-  Uint8List? _imageBytes;
+  Uint8List? _originalImageBytes;
+  Uint8List? _processedImageBytes;
   String? _base64String;
-  double? _brightness;
-  String? _savedFilePath;
 
+  /// **Pick Image from Gallery**
   Future<void> _pickImage() async {
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -41,44 +42,58 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
 
     final imageBytes = await pickedFile.readAsBytes();
     setState(() {
-      _imageBytes = imageBytes;
+      _originalImageBytes = imageBytes;
     });
 
     _processImage(imageBytes);
   }
 
+  /// **Process the Image and Convert to Base64**
   Future<void> _processImage(Uint8List imageBytes) async {
-    double? brightness = await SnapLib.calculateBrightness(imageBytes);
-    String? base64String = await SnapLib.convertMatToBase64(imageBytes);
-    String? savedPath = await SnapLib.convertMatToFile(
-        imageBytes, "/storage/emulated/0/Download/snap_image.jpg");
+    Uint8List? processedImage = await SnapLib.processImage(imageBytes);
+    String? base64String = base64Encode(processedImage!);
 
     setState(() {
-      _brightness = brightness;
+      _processedImageBytes = processedImage;
       _base64String = base64String;
-      _savedFilePath = savedPath;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SnapLib Example')),
+      appBar: AppBar(title: const Text('SnapLib Image Processor')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             ElevatedButton(
               onPressed: _pickImage,
-              child: const Text("Pick Image"),
+              child: const Text("Pick and Process Image"),
             ),
             const SizedBox(height: 16),
-            if (_imageBytes != null) Image.memory(_imageBytes!, height: 200),
-            const SizedBox(height: 16),
-            if (_brightness != null) Text("Brightness: $_brightness"),
-            if (_base64String != null)
-              Text("Base64 Length: ${_base64String!.length}"),
-            if (_savedFilePath != null) Text("Saved Image: $_savedFilePath"),
+            if (_originalImageBytes != null)
+              Column(
+                children: [
+                  const Text("Original Image"),
+                  Image.memory(_originalImageBytes!, height: 150),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            if (_processedImageBytes != null)
+              Column(
+                children: [
+                  const Text("Processed Image"),
+                  Image.memory(_processedImageBytes!, height: 150),
+                  const SizedBox(height: 16),
+                  const Text("Base64 Output (Shortened)"),
+                  Text(
+                    _base64String!.substring(0, 100) + "...",
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
           ],
         ),
       ),
