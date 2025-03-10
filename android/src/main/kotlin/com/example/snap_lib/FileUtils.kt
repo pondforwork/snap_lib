@@ -1,4 +1,4 @@
-package com.example.image_processor_plugin
+package com.example.snap_lib
 
 import android.content.Context
 import android.graphics.Bitmap

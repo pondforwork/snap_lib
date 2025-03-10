@@ -20,4 +20,29 @@ class MethodChannelSnapLib extends SnapLibPlatform {
   Future<void> startNewActivity() async {
     await methodChannel.invokeMethod<void>('startNewActivity');
   }
+
+  Future<double?> calculateBrightness(Uint8List imageBytes) async {
+    final brightness = await methodChannel.invokeMethod<double>(
+      'calculateBrightness',
+      {'image': imageBytes},
+    );
+    return brightness;
+  }
+
+  Future<String?> convertMatToBase64(Uint8List imageBytes) async {
+    final base64String = await methodChannel.invokeMethod<String>(
+      'convertMatToBase64',
+      {'image': imageBytes},
+    );
+    return base64String;
+  }
+
+  Future<String?> convertMatToFile(
+      Uint8List imageBytes, String filePath) async {
+    final savedFilePath = await methodChannel.invokeMethod<String>(
+      'convertMatToFile',
+      {'image': imageBytes, 'filePath': filePath},
+    );
+    return savedFilePath;
+  }
 }
