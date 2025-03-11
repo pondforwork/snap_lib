@@ -39,11 +39,9 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 "processImage" -> {
                     val imageBytes = call.argument<ByteArray>("image")
                     val gamma = call.argument<Double>("gamma") ?: 1.0
-                    val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
                     val d = call.argument<Int>("d") ?: 9
                     val sigmaColor = call.argument<Double>("sigmaColor") ?: 75.0
                     val sigmaSpace = call.argument<Double>("sigmaSpace") ?: 75.0
-                    val useSharpening = call.argument<Boolean>("useSharpening") ?: true
                     val sharpenStrength = call.argument<Double>("sharpenStrength") ?: 1.0
                     val blurKernelWidth = call.argument<Double>("blurKernelWidth") ?: 3.0
                     val blurKernelHeight = call.argument<Double>("blurKernelHeight") ?: 3.0
@@ -104,7 +102,18 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
                     }
                 }
+                "convertMatToBase64" -> {
+                    val imageBytes = call.argument<ByteArray>("image")
+                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val mat = bitmapToMat(bitmap)
 
+                        val base64String = convertMatToBase64(mat)
+                        result.success(base64String) // Send Base64 String to Flutter
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
+                    }
+                }
                 "processBackCard" -> {
                     val imageBytes = call.argument<ByteArray>("image")
                     val snr = call.argument<Double>("snr") ?: 0.0
@@ -159,7 +168,18 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
                     }
                 }
+                "calculateBrightness" -> {
+                    val imageBytes = call.argument<ByteArray>("image")
+                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val mat = bitmapToMat(bitmap)
 
+                        val brightness = calculateBrightness(mat)
+                        result.success(brightness) // Return brightness to Flutter
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
+                    }
+                }
                 "calculateSNR" -> {
                     val imageBytes = call.argument<ByteArray>("image")
                     if (imageBytes != null) {
@@ -335,7 +355,17 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
         return processedMat
     }
+    private fun calculateBrightness(mat: Mat): Double {
+        // Convert to grayscale for brightness analysis
+        val grayMat = Mat()
+        Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_BGR2GRAY)
 
+        // Compute the mean brightness
+        val meanScalar = org.opencv.core.Core.mean(grayMat)
+        grayMat.release() // Free memory
+
+        return meanScalar.`val`[0] // Return brightness value
+    }
     private fun processImageBackCard(
         snr: Double, contrast: Double, resolution: String,
         inputMat: Mat,
