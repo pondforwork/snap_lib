@@ -2,11 +2,16 @@ package com.example.snap_lib
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import androidx.annotation.NonNull
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import org.opencv.android.Utils
+import org.opencv.core.Mat
+import org.opencv.imgproc.Imgproc
+import java.io.ByteArrayOutputStream
 
 /** SnapLibPlugin */
 class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
@@ -29,17 +34,16 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       "processImage" -> {
         imageProcessor.onMethodCall(call, result)
       }
-
       "startFrontSnap" -> {
 
-        startFrontSnap(result)
+        startFrontSnap("hello")
 
         val parameter = call.argument<String>("titleMessage")
         if (parameter != null) {
-            startFrontSnap(parameter)
-            result.success("Parameter received")
+          startFrontSnap(parameter)
+          result.success("Parameter received")
         } else {
-            result.error("INVALID_ARGUMENT", "Parameter is null", null)
+          result.error("INVALID_ARGUMENT", "Parameter is null", null)
         }
 
       }
@@ -49,13 +53,13 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
   }
 
 
-  
-private fun startFrontSnap(parameter1: String) {
-  val intent = Intent(context, NewActivity::class.java)
-  intent.putExtra("titleMessage", parameter1)
-  intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-  context.startActivity(intent)
-}
+
+  private fun startFrontSnap(parameter1: String?) {
+    val intent = Intent(context, NewActivity::class.java)
+    intent.putExtra("titleMessage", parameter1)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+  }
 
   private fun processImage(imageBytes: ByteArray): ByteArray {
     val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)

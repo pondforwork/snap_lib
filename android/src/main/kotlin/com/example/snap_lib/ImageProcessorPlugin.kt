@@ -114,6 +114,67 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
                     }
                 }
+                "processFontCard" -> {
+                    val imageBytes = call.argument<ByteArray>("image")
+                    val snr = call.argument<Double>("snr") ?: 0.0
+                    val contrast = call.argument<Double>("contrast") ?: 0.0
+                    val resolution = call.argument<String>("resolution") ?: "0x0"
+                    val gamma = call.argument<Double>("gamma") ?: 1.0
+                    val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
+                    val d = call.argument<Int>("d") ?: 9
+                    val sigmaColor = call.argument<Double>("sigmaColor") ?: 75.0
+                    val sigmaSpace = call.argument<Double>("sigmaSpace") ?: 75.0
+                    val useSharpening = call.argument<Boolean>("useSharpening") ?: true
+                    val sharpenStrength = call.argument<Double>("sharpenStrength") ?: 1.0
+                    val blurKernelWidth = call.argument<Double>("blurKernelWidth") ?: 3.0
+                    val blurKernelHeight = call.argument<Double>("blurKernelHeight") ?: 3.0
+
+                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val mat = bitmapToMat(bitmap)
+
+                        val base64String = processImageFontCard(
+                            snr, contrast, resolution, mat, gamma,
+                            useBilateralFilter, d, sigmaColor, sigmaSpace,
+                            useSharpening, sharpenStrength, blurKernelWidth, blurKernelHeight
+                        )
+
+                            result.success(base64String)
+                    } else {
+                            result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
+                    }
+                }
+
+                "processBackCard" -> {
+                    val imageBytes = call.argument<ByteArray>("image")
+                    val snr = call.argument<Double>("snr") ?: 0.0
+                    val contrast = call.argument<Double>("contrast") ?: 0.0
+                    val resolution = call.argument<String>("resolution") ?: "0x0"
+                    val gamma = call.argument<Double>("gamma") ?: 1.8
+                    val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
+                    val d = call.argument<Int>("d") ?: 9
+                    val sigmaColor = call.argument<Double>("sigmaColor") ?: 75.0
+                    val sigmaSpace = call.argument<Double>("sigmaSpace") ?: 75.0
+                    val useSharpening = call.argument<Boolean>("useSharpening") ?: true
+                    val sharpenStrength = call.argument<Double>("sharpenStrength") ?: 1.0
+                    val blurKernelWidth = call.argument<Double>("blurKernelWidth") ?: 3.0
+                    val blurKernelHeight = call.argument<Double>("blurKernelHeight") ?: 3.0
+
+                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val mat = bitmapToMat(bitmap)
+
+                        val base64String = processImageBackCard(
+                            snr, contrast, resolution, mat, gamma,
+                            useBilateralFilter, d, sigmaColor, sigmaSpace,
+                            useSharpening, sharpenStrength, blurKernelWidth, blurKernelHeight
+                        )
+
+                            result.success(base64String)
+                    } else {
+                            result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
+                    }
+                }
 
                 else -> result.notImplemented()
             }
