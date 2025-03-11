@@ -98,7 +98,7 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => SnapLib.startFrontSnap(),
+        onPressed: () => SnapLib.startFrontSnap("ถ่ายภาพหน้าบัตรประชาชน"),
         child: const Icon(Icons.camera),
       ),
     );
