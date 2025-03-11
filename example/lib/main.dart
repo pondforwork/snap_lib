@@ -55,9 +55,10 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
     try {
       Uint8List? processedImage = await SnapLib.processImage(
         imageBytes,
-        gamma: 1.2, // Adjust gamma for processing
+        gamma: 1.5,
         noiseReduction: true,
         sharpening: true,
+        returnBase64: false,
       );
 
       if (processedImage != null) {
@@ -76,6 +77,7 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
       setState(() {
         _isProcessing = false;
       });
+      print(e);
       _showErrorDialog("Error processing image: ${e.toString()}");
     }
   }
