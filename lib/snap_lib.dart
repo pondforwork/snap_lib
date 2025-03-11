@@ -76,4 +76,8 @@ class SnapLib {
       'filePath': filePath,
     });
   }
+
+  static Future<void> startFrontSnap() async {
+    return await _channel.invokeMethod('startFrontSnap');
+  }
 }

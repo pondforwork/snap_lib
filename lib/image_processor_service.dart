@@ -20,4 +20,8 @@ class ImageProcessorPlugin {
     return await _channel.invokeMethod(
         'convertMatToFile', {'image': imageBytes, 'filePath': filePath});
   }
+
+  static Future<void> startFrontSnap() async {
+    return await _channel.invokeMethod('startFrontSnap');
+  }
 }

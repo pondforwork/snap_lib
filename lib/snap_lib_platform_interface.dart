@@ -27,7 +27,7 @@ abstract class SnapLibPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  Future<void> startNewActivity() {
-    throw UnimplementedError('startNewActivity() has not been implemented.');
+  Future<void> startFrontSnap() {
+    throw UnimplementedError('startFrontSnap() has not been implemented.');
   }
 }

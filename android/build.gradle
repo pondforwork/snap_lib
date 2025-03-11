@@ -92,6 +92,7 @@ android {
     // เปิดใช้งาน Compose ใน Android Studio
     buildFeatures {
         compose true
+        mlModelBinding true
     }
 
     // เดิมไม่มี 

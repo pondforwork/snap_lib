@@ -97,6 +97,10 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => SnapLib.startFrontSnap(),
+        child: const Icon(Icons.camera),
+      ),
     );
   }
 }

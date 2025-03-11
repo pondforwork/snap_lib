@@ -1,5 +1,9 @@
 package com.example.snap_lib
 
+
+import android.content.Intent
+import android.app.Activity
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
@@ -18,9 +22,13 @@ import java.io.ByteArrayOutputStream
 class SnapLibPlugin : FlutterPlugin, MethodCallHandler {
   private lateinit var channel: MethodChannel
 
+  private lateinit var context: Context
+
+
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "image_processor_plugin")
     channel.setMethodCallHandler(this)
+    context = flutterPluginBinding.applicationContext
 
     // ✅ Initialize OpenCV
     if (!OpenCVLoader.initDebug()) {
@@ -52,8 +60,18 @@ class SnapLibPlugin : FlutterPlugin, MethodCallHandler {
         }
       }
 
+      "startFrontSnap" -> {
+        startFrontSnap()
+      }
+
       else -> result.notImplemented()
     }
+  }
+
+  private fun startFrontSnap() {
+    val intent = Intent(context, NewActivity::class.java)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
   }
 
   private fun processImage(imageBytes: ByteArray): ByteArray {
