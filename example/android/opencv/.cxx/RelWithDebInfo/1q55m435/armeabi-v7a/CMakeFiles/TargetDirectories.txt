@@ -1,0 +1,3 @@
+C:/Users/User/Documents/Lib/snap_lib/example/android/opencv/.cxx/RelWithDebInfo/1q55m435/armeabi-v7a/CMakeFiles/opencv_jni_shared.dir
+C:/Users/User/Documents/Lib/snap_lib/example/android/opencv/.cxx/RelWithDebInfo/1q55m435/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/User/Documents/Lib/snap_lib/example/android/opencv/.cxx/RelWithDebInfo/1q55m435/armeabi-v7a/CMakeFiles/rebuild_cache.dir
