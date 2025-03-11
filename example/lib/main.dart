@@ -33,6 +33,7 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
   Uint8List? _originalImageBytes;
   Uint8List? _processedImageBytes;
   String? _base64String;
+  bool _isProcessing = false;
 
   /// **Pick Image from Gallery**
   Future<void> _pickImage() async {
@@ -43,20 +44,51 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
     final imageBytes = await pickedFile.readAsBytes();
     setState(() {
       _originalImageBytes = imageBytes;
+      _isProcessing = true;
     });
 
-    _processImage(imageBytes);
+    await _processImage(imageBytes);
   }
 
   /// **Process the Image and Convert to Base64**
   Future<void> _processImage(Uint8List imageBytes) async {
-    Uint8List? processedImage = await SnapLib.processImage(imageBytes);
-    String? base64String = base64Encode(processedImage!);
+    try {
+      Uint8List? processedImage = await SnapLib.processImage(imageBytes);
+      if (processedImage != null) {
+        setState(() {
+          _processedImageBytes = processedImage;
+          _base64String = base64Encode(processedImage);
+          _isProcessing = false;
+        });
+      } else {
+        setState(() {
+          _isProcessing = false;
+        });
+        _showErrorDialog("Image processing failed. Please try again.");
+      }
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+      _showErrorDialog("Error processing image: ${e.toString()}");
+    }
+  }
 
-    setState(() {
-      _processedImageBytes = processedImage;
-      _base64String = base64String;
-    });
+  /// **Show error message in a dialog**
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -66,10 +98,16 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ElevatedButton(
               onPressed: _pickImage,
-              child: const Text("Pick and Process Image"),
+              child: _isProcessing
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(color: Colors.white))
+                  : const Text("Pick and Process Image"),
             ),
             const SizedBox(height: 16),
             if (_originalImageBytes != null)
@@ -88,7 +126,8 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
                   const SizedBox(height: 16),
                   const Text("Base64 Output (Shortened)"),
                   Text(
-                    _base64String!.substring(0, 100) + "...",
+                    _base64String?.substring(0, 100) ??
+                        "Error encoding image...",
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -98,7 +137,13 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => SnapLib.startFrontSnap(),
+        onPressed: () async {
+          try {
+            await SnapLib.startFrontSnap();
+          } catch (e) {
+            _showErrorDialog("Failed to start front camera: ${e.toString()}");
+          }
+        },
         child: const Icon(Icons.camera),
       ),
     );
