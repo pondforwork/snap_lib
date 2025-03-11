@@ -35,9 +35,6 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         imageProcessor.onMethodCall(call, result)
       }
       "startFrontSnap" -> {
-
-        startFrontSnap("hello")
-
         val parameter = call.argument<String>("titleMessage")
         if (parameter != null) {
           startFrontSnap(parameter)
@@ -45,22 +42,17 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         } else {
           result.error("INVALID_ARGUMENT", "Parameter is null", null)
         }
-
       }
 
       else -> result.notImplemented()
     }
   }
-
-
-
-  private fun startFrontSnap(parameter1: String?) {
+  private fun startFrontSnap(parameter1: String) {
     val intent = Intent(context, NewActivity::class.java)
     intent.putExtra("titleMessage", parameter1)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(intent)
   }
-
   private fun processImage(imageBytes: ByteArray): ByteArray {
     val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
     val mat = bitmapToMat(bitmap)
