@@ -17,14 +17,13 @@ import java.io.ByteArrayOutputStream
 class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
   private lateinit var channel: MethodChannel
   private lateinit var context: Context
-  private lateinit var imageProcessor: ImageProcessorPlugin  // ✅ Reference to ImageProcessorPlugin
+  private lateinit var imageProcessor: ImageProcessorPlugin
 
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "image_processor_plugin")
     channel.setMethodCallHandler(this)
     context = flutterPluginBinding.applicationContext
 
-    // Initialize ImageProcessorPlugin
     imageProcessor = ImageProcessorPlugin()
     imageProcessor.onAttachedToEngine(flutterPluginBinding)
   }
@@ -53,46 +52,7 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(intent)
   }
-  private fun processImage(imageBytes: ByteArray): ByteArray {
-    val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-    val mat = bitmapToMat(bitmap)
 
-    // Apply some OpenCV processing
-    val processedMat = Mat()
-    Imgproc.cvtColor(mat, processedMat, Imgproc.COLOR_BGR2GRAY)
-
-    return matToByteArray(processedMat)
-  }
-
-  private fun convertMatToBase64(imageBytes: ByteArray): String {
-    val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-    val mat = bitmapToMat(bitmap)
-    val processedBitmap = matToBitmap(mat)
-
-    val outputStream = ByteArrayOutputStream()
-    processedBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-    val byteArray = outputStream.toByteArray()
-    return Base64.encodeToString(byteArray, Base64.DEFAULT)
-  }
-
-  private fun bitmapToMat(bitmap: Bitmap): Mat {
-    val mat = Mat()
-    Utils.bitmapToMat(bitmap, mat)
-    return mat
-  }
-
-  private fun matToBitmap(mat: Mat): Bitmap {
-    val bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888)
-    Utils.matToBitmap(mat, bitmap)
-    return bitmap
-  }
-
-  private fun matToByteArray(mat: Mat): ByteArray {
-    val bitmap = matToBitmap(mat)
-    val outputStream = ByteArrayOutputStream()
-    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-    return outputStream.toByteArray()
-  }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)
