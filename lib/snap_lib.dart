@@ -76,7 +76,8 @@ class SnapLib {
     });
   }
 
-  static Future<void> startFrontSnap() async {
-    return await _channel.invokeMethod('startFrontSnap');
+  static Future<void> startFrontSnap(String titleMessage) async {
+    return await _channel
+        .invokeMethod('startFrontSnap', {'titleMessage': titleMessage});
   }
 }

@@ -137,13 +137,7 @@ class _ImageProcessorScreenState extends State<ImageProcessorScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          try {
-            await SnapLib.startFrontSnap();
-          } catch (e) {
-            _showErrorDialog("Failed to start front camera: ${e.toString()}");
-          }
-        },
+        onPressed: () => SnapLib.startFrontSnap("ถ่ายภาพหน้าบัตรประชาชน"),
         child: const Icon(Icons.camera),
       ),
     );

@@ -107,25 +107,13 @@ import java.nio.ByteOrder
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+
 class NewActivity : AppCompatActivity() {
 
-    //    private val CAMERA_REQUEST_CODE = 2001
 //    // กำหนดตัวแปร Model TFlite
     private lateinit var model: ModelFront;
-//
-//    // กำลังประมวลผลภาพอยู่หรือไม่ ?
-//    private var isProcessing = false
-//    // ตัวจับเวลา ใช้ในการรอเวลาเพื่อประมวลผลรอบถัดไป
-//    private var lastProcessedTime: Long = 0
-//    // พบบัตรหรือไม่ ?
-//    private var isFound = false;
-//
-//    private lateinit var cameraExecutor: ExecutorService
-
-
     private lateinit var cameraExecutor: ExecutorService
     private val CAMERA_REQUEST_CODE = 2001
-
     private var isPredicting = true
     private var isProcessing = false
     private var lastProcessedTime: Long = 0
@@ -139,18 +127,20 @@ class NewActivity : AppCompatActivity() {
     // จัดเก็บ Bitmap ของรูปภาพทั้ง 5
     private val bitmapList: MutableList<Bitmap> = mutableListOf()
     private var sharPestImageIndex = 0
-//    private lateinit var mat: Mat
-
-    // ข้อความด้านบน
-
+    // private lateinit var mat: Mat
     // Path ของภาพที่ชัดที่สุด ที่จะนำมาใช้
     private var pathFinal = ""
-
     private val cameraViewModel: CameraViewModel by viewModels()
     private val rectPositionViewModel: RectPositionViewModel by viewModels()
 
+    // การปรับแต่งข้อความ
+    private var titleMessage = "กรุณาวางบัตรในกรอบ"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Get the parameter from the intent
+        titleMessage = intent.getStringExtra("titleMessage") ?: "กรุณาวางบัตรในกรอบ"
 
         // Request camera permission
         checkAndRequestCameraPermission(this, CAMERA_REQUEST_CODE)
@@ -160,23 +150,44 @@ class NewActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
         setContent {
             MaterialTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = Color.Black // Set background color to black
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize(),
+//                                .padding(16.dp),
+                            verticalArrangement = Arrangement.SpaceBetween, // Space out elements vertically
+                            horizontalAlignment = Alignment.CenterHorizontally // Center elements horizontally
+                        ) {
+                            // Title
+                             Text(
+ //                                fontFamily = fontKanit,
 
-                    Text(
-//                        fontFamily = fontKanit,
-                        text = "ถ่ายภาพหน้าบัตร",
-                        color = Color.White,
-                        style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .padding(bottom = 16.dp) // Adjust padding below the title
-                            .wrapContentWidth() // Ensure text wraps naturally
-                    )
+                                 text = titleMessage,
+                                 color = Color.White,
+                                 style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                                 textAlign = TextAlign.Center,
+                                 modifier = Modifier
+                                     .padding(top = 16.dp)
+                                     .wrapContentWidth()
+                             )
 
-                    CameraWithOverlay(
-//                        modifier = Modifier.weight(1f), // Take up available space
-                        cameraViewModel = cameraViewModel,
-                        rectPositionViewModel = rectPositionViewModel)
+                            // Camera preview with overlay
+                            CameraWithOverlay(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                    // .aspectRatio(4f / 3f), 
+                                cameraViewModel = cameraViewModel,
+                                rectPositionViewModel = rectPositionViewModel
+                            )
+
+                            // Cancel button
+
+                        }
+                    }
                 }
             }
         }
@@ -215,6 +226,7 @@ class NewActivity : AppCompatActivity() {
                     .align(Alignment.Center) // Center the preview
                     .fillMaxSize()
             ) {
+
                 CameraPreview(modifier = Modifier.fillMaxSize())
             }
 
@@ -382,7 +394,7 @@ class NewActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                        imageProxy.close()
+//                        imageProxy.close()
                     }
 
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -414,7 +426,7 @@ class NewActivity : AppCompatActivity() {
                     // กลับมา Predict หลังจากปิด Dialog
                     isPredicting = true
                     //รีเซ็ต GuideText เมื่อปิด Dialog (ถ่ายใหม่)
-//                    cameraViewModel.updateGuideText("กรุณาวางบัตรในกรอบ")
+                    cameraViewModel.updateGuideText("กรุณาวางบัตรในกรอบ")
                     isFound = false
                 },
                 onConfirm = {
@@ -480,7 +492,7 @@ class NewActivity : AppCompatActivity() {
         try {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastProcessedTime >= 200) {
-                Log.d("NewActivity", "Processing image")
+//                Log.d("NewActivity", "Processing image")
                 val bitmap = imageProxy.toBitmap()
                 // val rotatedBitmap = rotateBitmap(bitmap, 90f)
 
@@ -496,6 +508,12 @@ class NewActivity : AppCompatActivity() {
                         ?: 4 // หากไม่มี index ที่เข้าเงื่อนไข ให้ใช้ค่า default เป็น 4
 
                     Log.d("NewActivity", "maxIndex: $maxIndex")
+
+                    // ถ้าเป็น Class 1
+                    if (maxIndex == 0 ){
+                        cameraViewModel.updateGuideText("กรุณาวางบัตรในกรอบ")
+
+                    }
                 } else {
                     Log.d("NewActivity", "Output buffer is null")
                 }
