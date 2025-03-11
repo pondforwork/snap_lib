@@ -70,6 +70,8 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     val imageBytes = call.argument<ByteArray>("image")
                     val snr = call.argument<Double>("snr") ?: 0.0
                     val contrast = call.argument<Double>("contrast") ?: 0.0
+                    val brightness = call.argument<Double>("brightness") ?: 0.0
+                    val glarePercent = call.argument<Double>("glarePercent") ?: 0.0
                     val resolution = call.argument<String>("resolution") ?: "0x0"
                     val gamma = call.argument<Double>("gamma") ?: 1.0
                     val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
@@ -85,8 +87,9 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     if (imageBytes != null) {
                         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                         val mat = bitmapToMat(bitmap)
+
                         val processedMat = processImageFontCard(
-                            snr, contrast, resolution, mat, gamma,
+                            snr, contrast, brightness, glarePercent, resolution, mat, gamma,
                             useBilateralFilter, d, sigmaColor, sigmaSpace,
                             useSharpening, sharpenStrength, blurKernelWidth, blurKernelHeight
                         )
@@ -102,22 +105,13 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
                     }
                 }
-                "convertMatToBase64" -> {
-                    val imageBytes = call.argument<ByteArray>("image")
-                    if (imageBytes != null) {
-                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                        val mat = bitmapToMat(bitmap)
 
-                        val base64String = convertMatToBase64(mat)
-                        result.success(base64String) // Send Base64 String to Flutter
-                    } else {
-                        result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
-                    }
-                }
                 "processBackCard" -> {
                     val imageBytes = call.argument<ByteArray>("image")
                     val snr = call.argument<Double>("snr") ?: 0.0
                     val contrast = call.argument<Double>("contrast") ?: 0.0
+                    val brightness = call.argument<Double>("brightness") ?: 0.0
+                    val glarePercent = call.argument<Double>("glarePercent") ?: 0.0
                     val resolution = call.argument<String>("resolution") ?: "0x0"
                     val gamma = call.argument<Double>("gamma") ?: 1.8
                     val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
@@ -133,8 +127,9 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     if (imageBytes != null) {
                         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                         val mat = bitmapToMat(bitmap)
+
                         val processedMat = processImageBackCard(
-                            snr, contrast, resolution, mat, gamma,
+                            snr, contrast, brightness, glarePercent, resolution, mat, gamma,
                             useBilateralFilter, d, sigmaColor, sigmaSpace,
                             useSharpening, sharpenStrength, blurKernelWidth, blurKernelHeight
                         )
@@ -150,14 +145,31 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
                     }
                 }
+
                 "isImageQualityAcceptable" -> {
                     val snr = call.argument<Double>("snr") ?: 0.0
                     val contrast = call.argument<Double>("contrast") ?: 0.0
+                    val brightness = call.argument<Double>("brightness") ?: 0.0
+                    val glarePercent = call.argument<Double>("glarePercent") ?: 0.0
                     val resolution = call.argument<String>("resolution") ?: "0x0"
-                    val isAcceptable = isImageQualityAcceptable(snr, contrast, resolution)
+
+                    val isAcceptable = isImageQualityAcceptable(
+                        snr, contrast, brightness, glarePercent, resolution
+                    )
                     result.success(isAcceptable)
                 }
+                "convertMatToBase64" -> {
+                    val imageBytes = call.argument<ByteArray>("image")
+                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val mat = bitmapToMat(bitmap)
 
+                        val base64String = convertMatToBase64(mat)
+                        result.success(base64String) // Send Base64 String to Flutter
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
+                    }
+                }
                 "calculateContrast" -> {
                     val imageBytes = call.argument<ByteArray>("image")
                     if (imageBytes != null) {
@@ -212,6 +224,28 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
                     }
                 }
+                "applyGammaCorrection" -> {
+                    val imageBytes = call.argument<ByteArray>("image")
+                    val gamma = call.argument<Double>("gamma") ?: 1.0
+                    val returnBase64 = call.argument<Boolean>("returnBase64") ?: true
+
+                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val mat = bitmapToMat(bitmap)
+
+                        val processedMat = applyGammaCorrection(mat, gamma)
+
+                        val output = if (returnBase64) {
+                            convertMatToBase64(processedMat)
+                        } else {
+                            convertMatToByteArray(processedMat)
+                        }
+
+                        result.success(output)
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
+                    }
+                }
 
 
                 else -> result.notImplemented()
@@ -220,24 +254,51 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             result.error("PROCESSING_ERROR", "Error processing image: ${e.message}", null)
         }
     }
-    private fun isImageQualityAcceptable(snr: Double, contrast: Double, resolution: String): Boolean {
-        val (width, height) = resolution.split("x").map { it.toInt() }
-        val minResolution = 500  // Minimum acceptable resolution for OCR
-        val snrThreshold = 10.0  // Minimum SNR threshold
-        val contrastThreshold = 50.0  // Minimum contrast threshold
+    private fun isImageQualityAcceptable(
+        snr: Double,
+        contrast: Double,
+        brightness: Double,
+        glarePercent: Double,
+        resolution: String,
+        minResolution: Int = 500,
+        snrThreshold: Double = 3.0,
+        contrastThreshold: Double = 50.0,
+        maxBrightness: Int = 200,
+        maxGlarePercent: Double = 1.0
+    ): Boolean {
+        try {
+            require(minResolution > 0) { "minResolution must be greater than 0." }
+            require(snrThreshold > 0) { "snrThreshold must be greater than 0." }
+            require(contrastThreshold > 0) { "contrastThreshold must be greater than 0." }
+            require(maxBrightness in 1..255) { "maxBrightness must be between 1 and 255." }
+            require(maxGlarePercent in 0.0..100.0) { "maxGlarePercent must be between 0 and 100." }
 
-        if (width < minResolution || height < minResolution) {
-            throw IllegalArgumentException("Image resolution is too low ($resolution). Skipping preprocessing.")
+            val (width, height) = resolution.split("x").map { it.toIntOrNull() ?: 0 }
+
+            if (width < minResolution || height < minResolution) {
+                throw IllegalArgumentException("Image resolution is too low ($resolution). Minimum required is ${minResolution}x${minResolution}.")
+            }
+
+            if (snr < snrThreshold || contrast < contrastThreshold) {
+                println("Image quality is medium (SNR: $snr, Contrast: $contrast). Needs preprocessing.")
+                return false
+            }
+
+            if (brightness > maxBrightness || glarePercent > maxGlarePercent) {
+                println("Image quality is low due to brightness ($brightness) or glare ($glarePercent%). Needs preprocessing.")
+                return false
+            }
+
+            println("Image quality is sufficient (SNR: $snr, Contrast: $contrast). Skipping preprocessing.")
+            return true
+
+        } catch (e: Exception) {
+            println("Error validating image quality: ${e.message}")
+            throw IllegalArgumentException("Invalid input: ${e.message}")
         }
-
-        if (snr < snrThreshold || contrast < contrastThreshold) {
-            println("Image quality is medium (SNR: $snr, Contrast: $contrast). Needs preprocessing.")
-            return false // Indicates preprocessing is needed
-        }
-
-        println("Image quality is sufficient (SNR: $snr, Contrast: $contrast). Skipping preprocessing.")
-        return true // No preprocessing needed
     }
+
+
     private fun bitmapToMat(bitmap: Bitmap): Mat {
         val mat = Mat()
         Utils.bitmapToMat(bitmap, mat)
@@ -302,47 +363,42 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private fun processImageFontCard(
-        snr: Double, contrast: Double, resolution: String,
+        snr: Double, contrast: Double, brightness: Double, glarePercent: Double, resolution: String,
         inputMat: Mat,
-        gamma: Double = 1.0, // Default gamma correction value (1.0 = No Change)
-        useBilateralFilter: Boolean = true, // Enable/Disable Bilateral Filter
-        d: Int = 9, // Diameter of Bilateral Filter
-        sigmaColor: Double = 75.0, // Sigma Color for Bilateral Filter
-        sigmaSpace: Double = 75.0, // Sigma Space for Bilateral Filter
-        useSharpening: Boolean = true, // Enable/Disable Sharpening
-        sharpenStrength: Double = 1.0, // Strength of Unsharp Mask
-        blurKernelWidth: Double = 3.0, // Width of Gaussian Blur Kernel
-        blurKernelHeight: Double = 3.0 // Height of Gaussian Blur Kernel
+        gamma: Double = 1.0,
+        useBilateralFilter: Boolean = true,
+        d: Int = 9,
+        sigmaColor: Double = 75.0,
+        sigmaSpace: Double = 75.0,
+        useSharpening: Boolean = true,
+        sharpenStrength: Double = 1.0,
+        blurKernelWidth: Double = 3.0,
+        blurKernelHeight: Double = 3.0,
+        minResolution: Int = 500,
+        snrThreshold: Double = 3.0,
+        contrastThreshold: Double = 50.0,
+        maxBrightness: Int = 200,
+        maxGlarePercent: Double = 1.0
     ): Mat {
-        println("Processing Font Card - Checking Image Quality (SNR: $snr, Contrast: $contrast, Resolution: $resolution)")
+        println("Processing Font Card - Checking Image Quality (SNR: $snr, Contrast: $contrast, Brightness: $brightness, Glare: $glarePercent, Resolution: $resolution)")
 
-        // **Step 1: Check Image Quality**
-        val isQualityGood = isImageQualityAcceptable(snr, contrast, resolution)
+        val isQualityGood = isImageQualityAcceptable(snr, contrast, brightness, glarePercent, resolution, minResolution, snrThreshold, contrastThreshold, maxBrightness, maxGlarePercent)
 
-        // **Step 2: Apply Preprocessing Only if Quality is Low**
         val processedMat = if (!isQualityGood) {
             println("Font Card Image Quality is Low - Applying Preprocessing...")
+            var tempMat = inputMat.clone()
 
-            var tempMat = inputMat.clone() // Clone to avoid modifying original
-
-            // Ensure correct color format
             when (tempMat.type()) {
-                CvType.CV_8UC4 -> {
-                    println("Converting from RGBA to BGR")
-                    Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_RGBA2BGR)
-                }
+                CvType.CV_8UC4 -> Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_RGBA2BGR)
                 CvType.CV_8UC1 -> println("Grayscale image detected, no need for conversion")
                 else -> println("Unexpected Mat type: ${tempMat.type()}")
             }
 
-            // **Apply Processing**
             if (gamma != 1.0) tempMat = applyGammaCorrection(tempMat, gamma)
             if (useBilateralFilter) tempMat = reduceNoiseWithBilateral(tempMat, d, sigmaColor, sigmaSpace)
             if (useSharpening) tempMat = enhanceSharpenUnsharpMask(tempMat, sharpenStrength, Size(blurKernelWidth, blurKernelHeight))
 
-            // Convert back to RGBA if needed
             if (tempMat.type() == CvType.CV_8UC3) {
-                println("Converting from BGR to RGBA")
                 Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2RGBA)
             }
 
@@ -355,59 +411,44 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
         return processedMat
     }
-    private fun calculateBrightness(mat: Mat): Double {
-        // Convert to grayscale for brightness analysis
-        val grayMat = Mat()
-        Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_BGR2GRAY)
 
-        // Compute the mean brightness
-        val meanScalar = org.opencv.core.Core.mean(grayMat)
-        grayMat.release() // Free memory
-
-        return meanScalar.`val`[0] // Return brightness value
-    }
     private fun processImageBackCard(
-        snr: Double, contrast: Double, resolution: String,
+        snr: Double, contrast: Double, brightness: Double, glarePercent: Double, resolution: String,
         inputMat: Mat,
-        gamma: Double = 1.8, // Default gamma correction value for Back Card
-        useBilateralFilter: Boolean = true, // Enable/Disable Bilateral Filter
-        d: Int = 9, // Diameter of Bilateral Filter
-        sigmaColor: Double = 75.0, // Sigma Color for Bilateral Filter
-        sigmaSpace: Double = 75.0, // Sigma Space for Bilateral Filter
-        useSharpening: Boolean = true, // Enable/Disable Sharpening
-        sharpenStrength: Double = 1.0, // Strength of Unsharp Mask
-        blurKernelWidth: Double = 3.0, // Width of Gaussian Blur Kernel
-        blurKernelHeight: Double = 3.0 // Height of Gaussian Blur Kernel
+        gamma: Double = 1.8,
+        useBilateralFilter: Boolean = true,
+        d: Int = 9,
+        sigmaColor: Double = 75.0,
+        sigmaSpace: Double = 75.0,
+        useSharpening: Boolean = true,
+        sharpenStrength: Double = 1.0,
+        blurKernelWidth: Double = 3.0,
+        blurKernelHeight: Double = 3.0,
+        minResolution: Int = 500,
+        snrThreshold: Double = 3.0,
+        contrastThreshold: Double = 50.0,
+        maxBrightness: Int = 200,
+        maxGlarePercent: Double = 1.0
     ): Mat {
-        println("Processing Back Card - Checking Image Quality (SNR: $snr, Contrast: $contrast, Resolution: $resolution)")
+        println("Processing Back Card - Checking Image Quality (SNR: $snr, Contrast: $contrast, Brightness: $brightness, Glare: $glarePercent, Resolution: $resolution)")
 
-        // **Step 1: Check Image Quality**
-        val isQualityGood = isImageQualityAcceptable(snr, contrast, resolution)
+        val isQualityGood = isImageQualityAcceptable(snr, contrast, brightness, glarePercent, resolution, minResolution, snrThreshold, contrastThreshold, maxBrightness, maxGlarePercent)
 
-        // **Step 2: Apply Preprocessing Only if Quality is Low**
         val processedMat = if (!isQualityGood) {
             println("Back Card Image Quality is Low - Applying Preprocessing...")
+            var tempMat = inputMat.clone()
 
-            var tempMat = inputMat.clone() // Clone to avoid modifying original
-
-            // Ensure correct color format
             when (tempMat.type()) {
-                CvType.CV_8UC4 -> {
-                    println("Converting from RGBA to BGR")
-                    Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_RGBA2BGR)
-                }
+                CvType.CV_8UC4 -> Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_RGBA2BGR)
                 CvType.CV_8UC1 -> println("Grayscale image detected, no need for conversion")
                 else -> println("Unexpected Mat type: ${tempMat.type()}")
             }
 
-            // **Apply Processing**
             if (gamma != 1.0) tempMat = applyGammaCorrection(tempMat, gamma)
             if (useBilateralFilter) tempMat = reduceNoiseWithBilateral(tempMat, d, sigmaColor, sigmaSpace)
             if (useSharpening) tempMat = enhanceSharpenUnsharpMask(tempMat, sharpenStrength, Size(blurKernelWidth, blurKernelHeight))
 
-            // Convert back to RGBA if needed
             if (tempMat.type() == CvType.CV_8UC3) {
-                println("Converting from BGR to RGBA")
                 Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2RGBA)
             }
 
@@ -431,7 +472,17 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 
+    private fun calculateBrightness(mat: Mat): Double {
+        // Convert to grayscale for brightness analysis
+        val grayMat = Mat()
+        Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_BGR2GRAY)
 
+        // Compute the mean brightness
+        val meanScalar = org.opencv.core.Core.mean(grayMat)
+        grayMat.release() // Free memory
+
+        return meanScalar.`val`[0] // Return brightness value
+    }
     fun applyGammaCorrection(image: Mat, gamma: Double = 1.0): Mat {
         require(gamma in 1.0..5.0) { "Gamma must be between 1.0 and 5.0" }
 

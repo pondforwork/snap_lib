@@ -4,92 +4,148 @@ import 'package:flutter/services.dart';
 class SnapLib {
   static const MethodChannel _channel = MethodChannel('image_processor_plugin');
 
+  /// **Process Image (General)**
   static Future<dynamic> processImage(Uint8List imageBytes,
       {double gamma = 1.0,
-      bool noiseReduction = true,
-      bool sharpening = true,
+      int d = 9,
+      double sigmaColor = 75.0,
+      double sigmaSpace = 75.0,
+      double sharpenStrength = 1.0,
+      double blurKernelWidth = 3.0,
+      double blurKernelHeight = 3.0,
       bool returnBase64 = true}) async {
     return await _channel.invokeMethod('processImage', {
       'image': imageBytes,
       'gamma': gamma,
-      'noiseReduction': noiseReduction,
-      'sharpening': sharpening,
-      'returnBase64': returnBase64
+      'd': d,
+      'sigmaColor': sigmaColor,
+      'sigmaSpace': sigmaSpace,
+      'sharpenStrength': sharpenStrength,
+      'blurKernelWidth': blurKernelWidth,
+      'blurKernelHeight': blurKernelHeight,
+      'returnBase64': returnBase64,
     });
   }
 
+  /// **Process Front Card**
   static Future<dynamic> processFontCard(Uint8List imageBytes,
       {double snr = 0.0,
       double contrast = 0.0,
+      double brightness = 0.0,
+      double glarePercent = 0.0,
       String resolution = "0x0",
       double gamma = 1.0,
-      bool noiseReduction = true,
-      bool sharpening = true,
+      bool useBilateralFilter = true,
+      int d = 9,
+      double sigmaColor = 75.0,
+      double sigmaSpace = 75.0,
+      bool useSharpening = true,
+      double sharpenStrength = 1.0,
+      double blurKernelWidth = 3.0,
+      double blurKernelHeight = 3.0,
       bool returnBase64 = true}) async {
     return await _channel.invokeMethod('processFontCard', {
       'image': imageBytes,
       'snr': snr,
       'contrast': contrast,
+      'brightness': brightness,
+      'glarePercent': glarePercent,
       'resolution': resolution,
       'gamma': gamma,
-      'noiseReduction': noiseReduction,
-      'sharpening': sharpening,
-      'returnBase64': returnBase64
+      'useBilateralFilter': useBilateralFilter,
+      'd': d,
+      'sigmaColor': sigmaColor,
+      'sigmaSpace': sigmaSpace,
+      'useSharpening': useSharpening,
+      'sharpenStrength': sharpenStrength,
+      'blurKernelWidth': blurKernelWidth,
+      'blurKernelHeight': blurKernelHeight,
+      'returnBase64': returnBase64,
     });
   }
 
+  /// **Process Back Card**
   static Future<dynamic> processBackCard(Uint8List imageBytes,
       {double snr = 0.0,
       double contrast = 0.0,
+      double brightness = 0.0,
+      double glarePercent = 0.0,
       String resolution = "0x0",
       double gamma = 1.8,
-      bool noiseReduction = true,
-      bool sharpening = true,
+      bool useBilateralFilter = true,
+      int d = 9,
+      double sigmaColor = 75.0,
+      double sigmaSpace = 75.0,
+      bool useSharpening = true,
+      double sharpenStrength = 1.0,
+      double blurKernelWidth = 3.0,
+      double blurKernelHeight = 3.0,
       bool returnBase64 = true}) async {
     return await _channel.invokeMethod('processBackCard', {
       'image': imageBytes,
       'snr': snr,
       'contrast': contrast,
+      'brightness': brightness,
+      'glarePercent': glarePercent,
       'resolution': resolution,
       'gamma': gamma,
-      'noiseReduction': noiseReduction,
-      'sharpening': sharpening,
-      'returnBase64': returnBase64
+      'useBilateralFilter': useBilateralFilter,
+      'd': d,
+      'sigmaColor': sigmaColor,
+      'sigmaSpace': sigmaSpace,
+      'useSharpening': useSharpening,
+      'sharpenStrength': sharpenStrength,
+      'blurKernelWidth': blurKernelWidth,
+      'blurKernelHeight': blurKernelHeight,
+      'returnBase64': returnBase64,
     });
   }
 
+  /// **Calculate Brightness**
   static Future<double?> calculateBrightness(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('calculateBrightness', {'image': imageBytes});
   }
 
-  static Future<double?> calculateGlare(Uint8List imageBytes) async {
+  /// **Calculate Glare**
+  static Future<double?> calculateGlare(Uint8List imageBytes,
+      {double threshold = 230.0, double minGlareArea = 500.0}) async {
     return await _channel.invokeMethod('calculateGlare', {
       'image': imageBytes,
+      'threshold': threshold,
+      'minGlareArea': minGlareArea,
     });
   }
 
+  /// **Calculate SNR**
   static Future<double?> calculateSNR(Uint8List imageBytes) async {
     return await _channel.invokeMethod('calculateSNR', {'image': imageBytes});
   }
 
+  /// **Calculate Contrast**
   static Future<double?> calculateContrast(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('calculateContrast', {'image': imageBytes});
   }
 
+  /// **Calculate Resolution**
   static Future<String?> calculateResolution(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('calculateResolution', {'image': imageBytes});
   }
 
+  /// **Apply Gamma Correction**
   static Future<dynamic> applyGammaCorrection(
       Uint8List imageBytes, double gamma,
       {bool returnBase64 = true}) async {
-    return await _channel.invokeMethod('applyGammaCorrection',
-        {'image': imageBytes, 'gamma': gamma, 'returnBase64': returnBase64});
+    return await _channel.invokeMethod('applyGammaCorrection', {
+      'image': imageBytes,
+      'gamma': gamma,
+      'returnBase64': returnBase64,
+    });
   }
 
+  /// **Reduce Noise**
   static Future<dynamic> reduceNoise(Uint8List imageBytes,
       {int d = 9,
       double sigmaColor = 75.0,
@@ -100,10 +156,11 @@ class SnapLib {
       'd': d,
       'sigmaColor': sigmaColor,
       'sigmaSpace': sigmaSpace,
-      'returnBase64': returnBase64
+      'returnBase64': returnBase64,
     });
   }
 
+  /// **Enhance Sharpen**
   static Future<dynamic> enhanceSharpen(Uint8List imageBytes,
       {double strength = 1.5,
       double blurKernelWidth = 5.0,
@@ -114,10 +171,11 @@ class SnapLib {
       'strength': strength,
       'blurKernelWidth': blurKernelWidth,
       'blurKernelHeight': blurKernelHeight,
-      'returnBase64': returnBase64
+      'returnBase64': returnBase64,
     });
   }
 
+  /// **Convert Mat to Base64**
   static Future<String?> convertMatToBase64(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('convertMatToBase64', {'image': imageBytes});
