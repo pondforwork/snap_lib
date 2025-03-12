@@ -1,6 +1,27 @@
 package com.example.snap_lib
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
@@ -13,96 +34,94 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-import android.graphics.Rect
-import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.face.Face
-import com.google.mlkit.vision.face.FaceDetection
-import com.google.mlkit.vision.face.FaceDetectorOptions
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 class ScanFaceActivity : ComponentActivity() {
-    private lateinit var cameraExecutor: ExecutorService
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val cameraPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                setCameraContent(getOverlaySettings())
+            } else {
+                Log.e("CameraX", "Camera permission denied")
+            }
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED) {
+            setCameraContent(getOverlaySettings())
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    /** ✅ Extract all intent extras into a function */
+    private fun getOverlaySettings(): OverlaySettings {
+        return OverlaySettings(
+            guideText = intent.getStringExtra("guideText") ?: "ให้ใบหน้าอยู่ในกรอบที่กำหนด",
+            instructionText = intent.getStringExtra("instructionText") ?: "ไม่มีปิดตา จมูก ปาก และคาง",
+            successText = intent.getStringExtra("successText") ?: "ถือค้างไว้",
+            borderColorSuccess = intent.getIntExtra("borderColorSuccess", 0xFF00FF00.toInt()),
+            borderColorDefault = intent.getIntExtra("borderColorDefault", 0xFFFF0000.toInt()),
+            textColorDefault = intent.getIntExtra("textColorDefault", 0xFFFFFFFF.toInt()),
+            textColorSuccess = intent.getIntExtra("textColorSuccess", 0xFF00FF00.toInt()),
+            guideFontSize = intent.getFloatExtra("guideFontSize", 24f),
+            instructionFontSize = intent.getFloatExtra("instructionFontSize", 20f),
+            guideTextColor = intent.getIntExtra("guideTextColor", 0xFFFFFF00.toInt()),
+            instructionTextColor = intent.getIntExtra("instructionTextColor", 0x00FFFF.toInt())
+        )
+    }
+
+    private fun setCameraContent(settings: OverlaySettings) {
         setContent {
             MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color.Black
+                    color = androidx.compose.ui.graphics.Color.Black
                 ) {
-                    FaceDetectionScreen()
+                    FaceDetectionScreen(settings)
                 }
             }
         }
-
-        cameraExecutor = Executors.newSingleThreadExecutor()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
     }
 }
 
+/** ✅ Create a data class to hold overlay settings */
+data class OverlaySettings(
+    val guideText: String,
+    val instructionText: String,
+    val successText: String,
+    val borderColorSuccess: Int,
+    val borderColorDefault: Int,
+    val textColorDefault: Int,
+    val textColorSuccess: Int,
+    val guideFontSize: Float,
+    val instructionFontSize: Float,
+    val guideTextColor: Int,
+    val instructionTextColor: Int
+)
 @Composable
-fun FaceDetectionScreen() {
+fun FaceDetectionScreen(settings: OverlaySettings) {
     val context = LocalContext.current
-    var detectedFace by remember { mutableStateOf<Face?>(null) }
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     val executor = ContextCompat.getMainExecutor(context)
 
-    val previewView = androidx.camera.view.PreviewView(context)
-    val imageAnalyzer = ImageAnalysis.Builder()
-        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        .build()
-
-    val faceDetector = FaceDetection.getClient(
-        FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
-            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
-            .build()
-    )
-
-    imageAnalyzer.setAnalyzer(executor) { imageProxy ->
-//        val mediaImage = imageProxy.image
-//        if (mediaImage != null) {
-//            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-//            faceDetector.process(image)
-//                .addOnSuccessListener { faces ->
-//                    detectedFace = faces.firstOrNull() // Use the first detected face
-//                    imageProxy.close()
-//                }
-//                .addOnFailureListener { e ->
-//                    Log.e("FaceDetection", "Face detection failed", e)
-//                    imageProxy.close()
-//                }
-//        } else {
-//            imageProxy.close()
-//        }
+    val previewView = remember {
+        androidx.camera.view.PreviewView(context).apply {
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -117,7 +136,7 @@ fun FaceDetectionScreen() {
                 cameraProvider.bindToLifecycle(
                     context as ComponentActivity,
                     CameraSelector.DEFAULT_FRONT_CAMERA,
-                    preview, imageAnalyzer
+                    preview
                 )
             } catch (exc: Exception) {
                 Log.e("CameraX", "Use case binding failed", exc)
@@ -131,10 +150,22 @@ fun FaceDetectionScreen() {
             modifier = Modifier.fillMaxSize()
         )
 
+        // ✅ Overlay with settings
         CameraOverlay(
-            guideText = if (detectedFace != null) "ถือค้างไว้" else "ให้ใบหน้าอยู่ในกรอบที่กำหนด",
-            instructionText = "ไม่มีปิดตา จมูก ปาก และคาง",
-            borderColorSuccess = if (detectedFace != null) Color.Green else Color.Red
+            guideText = settings.guideText,
+            instructionText = settings.instructionText,
+            borderColorSuccess = Color(settings.borderColorSuccess),
+            borderColorDefault = Color(settings.borderColorDefault),
+            guideTextStyle = TextStyle(
+                fontSize = settings.guideFontSize.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(settings.guideTextColor)
+            ),
+            instructionTextStyle = TextStyle(
+                fontSize = settings.instructionFontSize.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(settings.instructionTextColor)
+            )
         )
     }
 }
@@ -146,30 +177,53 @@ fun CameraOverlay(
     instructionText: String = "ไม่มีปิดตา จมูก ปาก และคาง",
     borderColorSuccess: Color = Color.Green,
     borderColorDefault: Color = Color.Red,
-    borderWidth: Float = 8f,
-    guideTextStyle: TextStyle = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Yellow),
-    instructionTextStyle: TextStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.Cyan),
+    borderWidth: Dp = 8.dp,
+
+    // ✅ Customizable Guide Text
+    guideTextStyle: TextStyle = TextStyle(
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.White
+    ),
+    guideTextAlignment: Alignment = Alignment.TopCenter,
+    guideTextPadding: PaddingValues = PaddingValues(top = 16.dp),
+
+    // ✅ Customizable Instruction Text
+    instructionTextStyle: TextStyle = TextStyle(
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal,
+        color = Color.White
+    ),
+    instructionTextAlignment: Alignment = Alignment.BottomCenter,
+    instructionTextPadding: PaddingValues = PaddingValues(bottom = 16.dp)
 ) {
     val borderColor by animateColorAsState(
         targetValue = if (guideText == "ถือค้างไว้") borderColorSuccess else borderColorDefault,
         animationSpec = tween(durationMillis = 500)
     )
 
+    val textColor by animateColorAsState(
+        targetValue = if (guideText == "ถือค้างไว้") Color.Green else Color.White,
+        animationSpec = tween(durationMillis = 500)
+    )
+
     Box(modifier = modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val canvasWidth = size.width
-            val canvasHeight = size.height
+            val screenWidth = size.width
+            val screenHeight = size.height
 
-            val ovalWidth = canvasWidth * 0.7f
-            val ovalHeight = canvasHeight * 0.5f
-            val ovalLeft = (canvasWidth - ovalWidth) / 2
-            val ovalTop = (canvasHeight - ovalHeight) / 2
+            val ovalWidth = screenWidth * 0.7f
+            val ovalHeight = screenHeight * 0.5f
+            val ovalLeft = (screenWidth - ovalWidth) / 2
+            val ovalTop = (screenHeight - ovalHeight) / 2
 
+            // ✅ Dark overlay background
             drawRect(
                 color = Color.Black.copy(alpha = 0.6f),
                 size = size
             )
 
+            // ✅ Clear the oval scanning area
             drawOval(
                 color = Color.Transparent,
                 topLeft = Offset(ovalLeft, ovalTop),
@@ -177,28 +231,32 @@ fun CameraOverlay(
                 blendMode = BlendMode.Clear
             )
 
+            // ✅ Draw the animated border
             drawOval(
                 color = borderColor,
                 topLeft = Offset(ovalLeft, ovalTop),
                 size = Size(ovalWidth, ovalHeight),
-                style = Stroke(width = borderWidth.dp.toPx())
+                style = Stroke(width = borderWidth.toPx())
             )
         }
 
-        BasicText(
+        // ✅ Guide Text (Dynamic Color & Alignment)
+        Text(
             text = guideText,
-            style = guideTextStyle,
+            style = guideTextStyle.copy(color = textColor),
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 16.dp)
+                .align(guideTextAlignment)
+                .padding(guideTextPadding)
         )
 
-        BasicText(
+        // ✅ Instruction Text (Static Position)
+        Text(
             text = instructionText,
-            style = instructionTextStyle.copy(color = Color.Magenta),
+            style = instructionTextStyle,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp)
+                .align(instructionTextAlignment)
+                .padding(instructionTextPadding)
         )
     }
 }
+

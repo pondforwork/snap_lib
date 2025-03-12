@@ -107,7 +107,7 @@ class HomeScreen extends StatelessWidget {
                       guideFontSize: 24.0,
                       instructionFontSize: 20.0,
                       guideTextColor: 0xFFFFFF00,
-                      instructionTextColor: 0xFF00FFFF,
+                      instructionTextColor: 0x00FFFF,
                       faceSnapMode: FaceSnapMode.strict, // Use strict mode
                     ),
                   ))

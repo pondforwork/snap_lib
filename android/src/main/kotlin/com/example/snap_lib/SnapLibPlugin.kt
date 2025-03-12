@@ -3,6 +3,7 @@ package com.example.snap_lib
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -73,24 +74,28 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             putExtra("instructionText", call.argument<String>("instructionText") ?: "ไม่มีปิดตา จมูก ปาก และคาง")
             putExtra("successText", call.argument<String>("successText") ?: "ถือค้างไว้")
 
-            // Explicitly convert Long to Int
-            putExtra("borderColorSuccess", (call.argument<Number>("borderColorSuccess") ?: Color.GREEN).toInt())
-            putExtra("borderColorDefault", (call.argument<Number>("borderColorDefault") ?: Color.RED).toInt())
-            putExtra("textColorDefault", (call.argument<Number>("textColorDefault") ?: Color.WHITE).toInt())
-            putExtra("textColorSuccess", (call.argument<Number>("textColorSuccess") ?: Color.GREEN).toInt())
+            // ✅ Convert Long to Int for colors
+            putExtra("borderColorSuccess", (call.argument<Number>("borderColorSuccess") ?: 0xFF00FF00).toInt())
+            putExtra("borderColorDefault", (call.argument<Number>("borderColorDefault") ?: 0xFFFF0000).toInt())
+            putExtra("textColorDefault", (call.argument<Number>("textColorDefault") ?: 0xFFFFFFFF).toInt())
+            putExtra("textColorSuccess", (call.argument<Number>("textColorSuccess") ?: 0xFF00FF00).toInt())
 
-            putExtra("guideFontSize", (call.argument<Number>("guideFontSize") ?: 22.0).toFloat())
-            putExtra("instructionFontSize", (call.argument<Number>("instructionFontSize") ?: 18.0).toFloat())
+            // ✅ Convert Double to Float for font sizes
+            putExtra("guideFontSize", (call.argument<Number>("guideFontSize") ?: 24.0).toFloat())
+            putExtra("instructionFontSize", (call.argument<Number>("instructionFontSize") ?: 20.0).toFloat())
 
-            putExtra("guideTextColor", (call.argument<Number>("guideTextColor") ?: Color.YELLOW).toInt())
-            putExtra("instructionTextColor", (call.argument<Number>("instructionTextColor") ?: Color.CYAN).toInt())
+            // ✅ Convert Long to Int for text colors
+            putExtra("guideTextColor", (call.argument<Number>("guideTextColor") ?: 0xFFFFFF00).toInt())
+            putExtra("instructionTextColor", (call.argument<Number>("instructionTextColor") ?: 0x00FFFF).toInt())
+
+            // ✅ Handle Enum String for FaceSnapMode
+            putExtra("faceSnapMode", call.argument<String>("faceSnapMode") ?: "normal")
         }
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
         result.success("Camera Overlay Started")
     }
-
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)

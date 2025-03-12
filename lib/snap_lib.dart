@@ -230,7 +230,7 @@ class SnapLib {
       'instructionFontSize': faceSettings.instructionFontSize,
       'guideTextColor': faceSettings.guideTextColor,
       'instructionTextColor': faceSettings.instructionTextColor,
-      'faceSnapMode': faceSettings.faceSnapMode.name, // Convert enum to String
+      'faceSnapMode': faceSettings.faceSnapMode.name,
     });
 
     return result?.toString();
