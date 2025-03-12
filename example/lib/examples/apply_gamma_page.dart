@@ -15,6 +15,7 @@ class _ApplyGammaPageState extends State<ApplyGammaPage> {
   Uint8List? _processedImage;
   String? _base64String;
   bool _returnBase64 = true;
+  double _gammaValue = 1.0; // Default gamma value
 
   Future<void> _pickAndApplyGamma() async {
     try {
@@ -25,14 +26,16 @@ class _ApplyGammaPageState extends State<ApplyGammaPage> {
       final imageBytes = await pickedFile.readAsBytes();
       setState(() => _originalImage = imageBytes);
 
-      final result = await SnapLib.applyGammaCorrection(imageBytes, 6.0,
+      final result = await SnapLib.applyGammaCorrection(imageBytes, _gammaValue,
           returnBase64: _returnBase64);
 
       setState(() {
         if (_returnBase64) {
           _base64String = result as String;
+          _processedImage = null;
         } else {
           _processedImage = result as Uint8List;
+          _base64String = null;
         }
       });
     } catch (e) {
@@ -67,8 +70,9 @@ class _ApplyGammaPageState extends State<ApplyGammaPage> {
           child: Column(
             children: [
               ElevatedButton(
-                  onPressed: _pickAndApplyGamma,
-                  child: const Text("Pick Image")),
+                onPressed: _pickAndApplyGamma,
+                child: const Text("Pick Image"),
+              ),
               const SizedBox(height: 10),
               if (_originalImage != null)
                 Image.memory(_originalImage!, height: 150),
@@ -76,6 +80,18 @@ class _ApplyGammaPageState extends State<ApplyGammaPage> {
               if (_processedImage != null)
                 Image.memory(_processedImage!, height: 150),
               if (_base64String != null) Text(_base64String!.substring(0, 100)),
+              const SizedBox(height: 20),
+              Text("Gamma Value: ${_gammaValue.toStringAsFixed(1)}"),
+              Slider(
+                value: _gammaValue,
+                min: 0.1,
+                max: 10.0,
+                divisions: 99,
+                label: _gammaValue.toStringAsFixed(1),
+                onChanged: (value) {
+                  setState(() => _gammaValue = value);
+                },
+              ),
               SwitchListTile(
                 title: const Text("Return as Base64"),
                 value: _returnBase64,
