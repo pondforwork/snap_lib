@@ -145,6 +145,8 @@ class NewActivity : AppCompatActivity() {
     // การปรับแต่งข้อความและตำแหน่งข้อความ
     private var titleMessage = "ถ่ายภาพหน้าบัตร"
     private var initialGuideText = "กรุณาวางบัตรในกรอบ"
+    private var foundMessage = "พบบัตร"
+    private var notFoundMessage = "ไม่พบบัตร"
 
     private lateinit var imageProcessorPlugin: ImageProcessorPlugin
 
@@ -155,7 +157,10 @@ class NewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Get the parameter from the intent
-        titleMessage = intent.getStringExtra("titleMessage") ?: "กรุณาวางบัตรในกรอบ"
+        titleMessage = intent.getStringExtra("titleMessage") ?: "ถ่ายภาพหน้าบัตร"
+        initialGuideText = intent.getStringExtra("initialMessage") ?: "กรุณาวางบัตรในกรอบ"
+        foundMessage = intent.getStringExtra("foundMessage") ?: "พบบัตร ถือค้างไว้"
+        notFoundMessage = intent.getStringExtra("notFoundMessage") ?: "ไม่พบบัตร"
 
         // Request camera permission
         checkAndRequestCameraPermission(this, CAMERA_REQUEST_CODE)
@@ -537,10 +542,10 @@ class NewActivity : AppCompatActivity() {
                     // ถ้าเป็น Class 0
                     // 0 คือ บัตรประชาชน
                     if (maxIndex == 0 ){
-                        cameraViewModel.updateGuideText("ถือค้างไว้")
+                        cameraViewModel.updateGuideText(foundMessage)
                         isFound = true
                     }else{
-                        cameraViewModel.updateGuideText(initialGuideText)
+                        cameraViewModel.updateGuideText(notFoundMessage)
                     }
                 } else {
                     Log.d("NewActivity", "Output buffer is null")
@@ -717,6 +722,7 @@ class NewActivity : AppCompatActivity() {
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly // Evenly distribute buttons
                         ) {
+                            // ปุ่มถ่ายใหม่
                             // Retake Button
                             Button(
                                 onClick = onRetake,

@@ -34,9 +34,14 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         imageProcessor.onMethodCall(call, result)
       }
       "startFrontSnap" -> {
+        // Parameter ที่ Parse เข้ามา
         val parameter = call.argument<String>("titleMessage")
-        if (parameter != null) {
-          startFrontSnap(parameter)
+        val initialMessage = call.argument<String>("initialMessage")
+        val foundMessage = call.argument<String>("foundMessage")
+        val notFoundMessage = call.argument<String>("notFoundMessage")
+
+        if (parameter != null && initialMessage !=null && foundMessage !=null && notFoundMessage !=null) {
+          startFrontSnap(parameter,initialMessage,foundMessage,notFoundMessage)
           result.success("Parameter received")
         } else {
           result.error("INVALID_ARGUMENT", "Parameter is null", null)
@@ -46,9 +51,12 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       else -> result.notImplemented()
     }
   }
-  private fun startFrontSnap(parameter1: String) {
+  private fun startFrontSnap(parameter1: String , initialMessage: String , foundMessage: String, notFoundMessage: String) {
     val intent = Intent(context, NewActivity::class.java)
     intent.putExtra("titleMessage", parameter1)
+    intent.putExtra("initialMessage", initialMessage)
+    intent.putExtra("foundMessage", foundMessage)
+    intent.putExtra("notFoundMessage", notFoundMessage)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(intent)
   }

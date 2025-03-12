@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:snap_lib/settings/front_snap_settings.dart';
+import 'package:snap_lib/snap_lib.dart';
 import 'package:snap_lib_example/examples/apply_gamma_page.dart';
 import 'package:snap_lib_example/examples/calculate_brightness_page.dart';
 import 'package:snap_lib_example/examples/calculate_contrast_page.dart';
@@ -25,13 +27,20 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SnapLib Example',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomeScreen(),
+      home: HomeScreen(),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  // การตั้งค่า หน้า FrontSnap
+  FrontSnapSettings settings = FrontSnapSettings(
+      titleMessage: "ถ่ายภาพหน้าบัตร sfdsfsd",
+      initialMessage: "กรุณาวางบัตรในกรอบ",
+      foundMessage: "พบบัตร ถือนิ่งๆ",
+      notFoundMessage: " วางบัตรในกรอบหน่อย");
+
+  HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +72,9 @@ class HomeScreen extends StatelessWidget {
               context, "Apply Gamma Correction", const ApplyGammaPage()),
         ],
       ),
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        SnapLib.startFrontSnap(settings);
+      }),
     );
   }
 
