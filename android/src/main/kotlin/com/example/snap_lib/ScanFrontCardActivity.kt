@@ -81,6 +81,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.snap_lib.ml.ModelFront
+import com.example.snap_lib.ml.ModelFrontNew
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import org.opencv.android.Utils
@@ -98,12 +99,11 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 import org.opencv.core.MatOfDouble
-import com.example.snap_lib.ImageProcessorPlugin
 
-class ScanCardActivity : AppCompatActivity() {
+class ScanFrontCardActivity : AppCompatActivity() {
+    // สร้างตัวแปรที่รอ Init Model TFlite
+    private lateinit var model: ModelFrontNew;
 
-    // กำหนดตัวแปร Model TFlite
-    private lateinit var model: ModelFront;
     private lateinit var cameraExecutor: ExecutorService
     private val CAMERA_REQUEST_CODE = 2001
     private var isPredicting = true
@@ -149,14 +149,8 @@ class ScanCardActivity : AppCompatActivity() {
         notFoundMessage = intent.getStringExtra("notFoundMessage") ?: "ไม่พบบัตร"
         snapMode = intent.getStringExtra("snapMode") ?: "front"
 
-        // ถ้า snapMode = front ให้กำหนดโมเดล Tf Lite เป็นหน้าบัตร
-        model = if (snapMode == "front") {
-            titleMessage = "หน้าบัตร sss"
-            ModelFront.newInstance(this)  // ✅ กำหนดค่าให้ model ก่อน
-        } else {
-            titleMessage = "หลังบัตร sss"
-            ModelFront.newInstance(this)  // ✅ กำหนดค่าให้ model ก่อน
-        }
+        // สร้างตัวแปร Model Front ที่นี่
+        model = ModelFrontNew.newInstance(this)
 
 
         // Request camera permission

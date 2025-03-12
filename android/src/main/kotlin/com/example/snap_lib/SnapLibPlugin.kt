@@ -34,7 +34,7 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       "processImage" -> {
         imageProcessor.onMethodCall(call, result)
       }
-      "startFrontSnap" -> {
+     "startFrontSnap" -> {
         // Parameter ที่ Parse เข้ามา
         val parameter = call.argument<String>("titleMessage")
         val initialMessage = call.argument<String>("initialMessage")
@@ -48,7 +48,7 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         } else {
           result.error("INVALID_ARGUMENT", "Parameter is null", null)
         }
-      }
+     }
 
       "openScanFace" -> {
         openScanFace()
@@ -59,16 +59,30 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       else -> result.notImplemented()
     }
   }
+  
   private fun startFrontSnap(parameter1: String , initialMessage: String , foundMessage: String, notFoundMessage: String, snapMode : String) {
-    val intent = Intent(context, ScanCardActivity::class.java)
-    intent.putExtra("titleMessage", parameter1)
-    intent.putExtra("initialMessage", initialMessage)
-    intent.putExtra("foundMessage", foundMessage)
-    intent.putExtra("notFoundMessage", notFoundMessage)
-    intent.putExtra("snapMode", snapMode)
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    context.startActivity(intent)
+
+    if(snapMode == "front"){
+      val intent = Intent(context, ScanFrontCardActivity::class.java)
+      intent.putExtra("titleMessage", parameter1)
+      intent.putExtra("initialMessage", initialMessage)
+      intent.putExtra("foundMessage", foundMessage)
+      intent.putExtra("notFoundMessage", notFoundMessage)
+      intent.putExtra("snapMode", snapMode)
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      context.startActivity(intent)
+    } else {
+      val intent = Intent(context, ScanBackCardActivity::class.java)
+      intent.putExtra("titleMessage", parameter1)
+      intent.putExtra("initialMessage", initialMessage)
+      intent.putExtra("foundMessage", foundMessage)
+      intent.putExtra("notFoundMessage", notFoundMessage)
+      intent.putExtra("snapMode", snapMode)
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      context.startActivity(intent)
+    }
   }
+
 
   private fun openScanFace() {
     val intent = Intent(context, ScanFaceActivity::class.java)

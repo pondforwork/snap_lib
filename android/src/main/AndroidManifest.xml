@@ -9,7 +9,9 @@
 
 
   <application>
-    <activity android:name=".ScanCardActivity" android:theme="@style/Theme.SnapLib" />
+    <activity android:name=".ScanFrontCardActivity" android:theme="@style/Theme.SnapLib" />
+
+    <activity android:name=".ScanBackCardActivity" android:theme="@style/Theme.SnapLib" />
 
     <activity android:name=".ScanFaceActivity" android:theme="@style/Theme.SnapLib" />
 
