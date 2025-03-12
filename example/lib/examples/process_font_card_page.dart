@@ -17,13 +17,19 @@ class _ProcessFontCardPageState extends State<ProcessFontCardPage> {
   bool _returnBase64 = true;
   bool _useBilateralFilter = true;
   bool _useSharpening = true;
+  bool _useGammaCorrection = true;
 
-  double _gamma = 6.0;
+  double _gamma = 1.0;
   int _d = 9;
   double _sigmaColor = 75.0;
   double _sigmaSpace = 75.0;
   double _sharpenStrength = 1.0;
   double _blurKernelSize = 3.0;
+  double _glarePercent = 1.0;
+  double _snr = 0.0;
+  double _contrast = 0.0;
+  double _brightness = 0.0;
+  String _resolution = "0x0";
 
   Future<void> _pickAndProcessImage() async {
     final pickedFile =
@@ -34,9 +40,20 @@ class _ProcessFontCardPageState extends State<ProcessFontCardPage> {
     setState(() => _originalImage = imageBytes);
 
     final resolution = await SnapLib.calculateResolution(imageBytes);
-    print("Resolution: $resolution");
+    final snr = await SnapLib.calculateSNR(imageBytes);
+    final contrast = await SnapLib.calculateContrast(imageBytes);
+    final brightness = await SnapLib.calculateBrightness(imageBytes);
+    final glare = await SnapLib.calculateGlare(imageBytes);
 
-    if (resolution == "0x0") {
+    setState(() {
+      _resolution = resolution ?? "0x0";
+      _snr = snr ?? 0.0;
+      _contrast = contrast ?? 0.0;
+      _brightness = brightness ?? 0.0;
+      _glarePercent = glare ?? 0.0;
+    });
+
+    if (_resolution == "0x0") {
       _showErrorDialog(
           "Image resolution is too low. Please select a higher resolution image.");
       return;
@@ -45,13 +62,18 @@ class _ProcessFontCardPageState extends State<ProcessFontCardPage> {
     try {
       final result = await SnapLib.processFontCard(
         imageBytes,
-        resolution: resolution!,
+        resolution: _resolution,
+        snr: _snr,
+        contrast: _contrast,
+        brightness: _brightness,
+        glarePercent: _glarePercent,
         gamma: _gamma,
-        useBilateralFilter: _useBilateralFilter,
+        reduceNoise: _useBilateralFilter,
         d: _d,
         sigmaColor: _sigmaColor,
         sigmaSpace: _sigmaSpace,
-        useSharpening: _useSharpening,
+        enhanceSharpen: _useSharpening,
+        applyGamma: _useGammaCorrection,
         sharpenStrength: _sharpenStrength,
         blurKernelSize: _blurKernelSize,
         returnBase64: _returnBase64,
@@ -91,119 +113,83 @@ class _ProcessFontCardPageState extends State<ProcessFontCardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Process Font Card")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: _pickAndProcessImage,
-              child: const Text("Pick & Process Image"),
-            ),
-            const SizedBox(height: 10),
-
-            // Display Original Image
-            if (_originalImage != null) ...[
-              const Text("Original Image",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Image.memory(_originalImage!, height: 150),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: _pickAndProcessImage,
+                child: const Text("Pick Image"),
+              ),
               const SizedBox(height: 10),
-            ],
-
-            // Display Processed Image
-            if (_processedImage != null) ...[
-              const Text("Processed Image",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Image.memory(_processedImage!, height: 150),
+              if (_originalImage != null)
+                Image.memory(_originalImage!, height: 150),
               const SizedBox(height: 10),
+              if (_processedImage != null)
+                Image.memory(_processedImage!, height: 150),
+              if (_base64String != null) Text(_base64String!.substring(0, 100)),
+
+              // Toggle Options
+              SwitchListTile(
+                title: const Text("Return as Base64"),
+                value: _returnBase64,
+                onChanged: (value) => setState(() => _returnBase64 = value),
+              ),
+              SwitchListTile(
+                title: const Text("Use Bilateral Filter"),
+                value: _useBilateralFilter,
+                onChanged: (value) =>
+                    setState(() => _useBilateralFilter = value),
+              ),
+              SwitchListTile(
+                title: const Text("Use Sharpening"),
+                value: _useSharpening,
+                onChanged: (value) => setState(() => _useSharpening = value),
+              ),
+              SwitchListTile(
+                title: const Text("Use Gamma Correction"),
+                value: _useGammaCorrection,
+                onChanged: (value) =>
+                    setState(() => _useGammaCorrection = value),
+              ),
+
+              // Parameter Controls
+              const SizedBox(height: 10),
+              _buildSlider("Gamma", _gamma, 0.1, 10.0,
+                  (value) => setState(() => _gamma = value)),
+              _buildSlider("Sharpen Strength", _sharpenStrength, 0.1, 3.0,
+                  (value) => setState(() => _sharpenStrength = value)),
+              _buildSlider("Blur Kernel Size", _blurKernelSize, 3.0, 15.0,
+                  (value) => setState(() => _blurKernelSize = value)),
+              _buildSlider("d (Diameter)", _d.toDouble(), 1, 20,
+                  (value) => setState(() => _d = value.toInt())),
+              _buildSlider("Sigma Color", _sigmaColor, 10.0, 150.0,
+                  (value) => setState(() => _sigmaColor = value)),
+              _buildSlider("Sigma Space", _sigmaSpace, 10.0, 150.0,
+                  (value) => setState(() => _sigmaSpace = value)),
             ],
-
-            // Display Base64 String (First 100 characters)
-            if (_base64String != null) ...[
-              const Text("Processed Image (Base64)"),
-              Text(_base64String!.substring(0, 100) + "..."),
-            ],
-
-            const SizedBox(height: 20),
-
-            // Gamma Correction Slider
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Gamma Correction",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Slider(
-                  value: _gamma,
-                  min: 1.0,
-                  max: 10.0,
-                  divisions: 9,
-                  label: _gamma.toStringAsFixed(1),
-                  onChanged: (value) => setState(() => _gamma = value),
-                ),
-              ],
-            ),
-
-            // Sharpening Strength Slider
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Sharpening Strength",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Slider(
-                  value: _sharpenStrength,
-                  min: 0.1,
-                  max: 3.0,
-                  divisions: 10,
-                  label: _sharpenStrength.toStringAsFixed(1),
-                  onChanged: (value) =>
-                      setState(() => _sharpenStrength = value),
-                ),
-              ],
-            ),
-
-            // Blur Kernel Size Slider
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Blur Kernel Size",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Slider(
-                  value: _blurKernelSize,
-                  min: 3.0,
-                  max: 9.0,
-                  divisions: 6,
-                  label: _blurKernelSize.toStringAsFixed(1),
-                  onChanged: (value) => setState(() => _blurKernelSize = value),
-                ),
-              ],
-            ),
-
-            // Toggle Use Bilateral Filter
-            SwitchListTile(
-              title: const Text("Use Bilateral Filter"),
-              value: _useBilateralFilter,
-              onChanged: (value) => setState(() => _useBilateralFilter = value),
-            ),
-
-            // Toggle Use Sharpening
-            SwitchListTile(
-              title: const Text("Use Sharpening"),
-              value: _useSharpening,
-              onChanged: (value) => setState(() => _useSharpening = value),
-            ),
-
-            // Return as Base64 Toggle
-            SwitchListTile(
-              title: const Text("Return as Base64"),
-              value: _returnBase64,
-              onChanged: (value) => setState(() => _returnBase64 = value),
-            ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSlider(String label, double value, double min, double max,
+      ValueChanged<double> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("$label: ${value.toStringAsFixed(2)}"),
+        Slider(
+          value: value,
+          min: min,
+          max: max,
+          divisions: 10,
+          label: value.toStringAsFixed(2),
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 }

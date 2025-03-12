@@ -50,60 +50,62 @@ class _ReduceNoisePageState extends State<ReduceNoisePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Reduce Noise")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: _pickAndReduceNoise,
-              child: const Text("Pick Image"),
-            ),
-            const SizedBox(height: 10),
-            if (_originalImage != null)
-              Image.memory(_originalImage!, height: 150),
-            const SizedBox(height: 10),
-            if (_processedImage != null)
-              Image.memory(_processedImage!, height: 150),
-            if (_base64String != null) Text(_base64String!.substring(0, 100)),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: _pickAndReduceNoise,
+                child: const Text("Pick Image"),
+              ),
+              const SizedBox(height: 10),
+              if (_originalImage != null)
+                Image.memory(_originalImage!, height: 150),
+              const SizedBox(height: 10),
+              if (_processedImage != null)
+                Image.memory(_processedImage!, height: 150),
+              if (_base64String != null) Text(_base64String!.substring(0, 100)),
 
-            // Noise Reduction Controls
-            const SizedBox(height: 10),
-            Text("d (Diameter): $_d"),
-            Slider(
-              value: _d.toDouble(),
-              min: 1,
-              max: 20,
-              divisions: 19,
-              label: "$_d",
-              onChanged: (value) => setState(() => _d = value.toInt()),
-            ),
+              // Noise Reduction Controls
+              const SizedBox(height: 10),
+              Text("d (Diameter): $_d"),
+              Slider(
+                value: _d.toDouble(),
+                min: 1,
+                max: 20,
+                divisions: 19,
+                label: "$_d",
+                onChanged: (value) => setState(() => _d = value.toInt()),
+              ),
 
-            Text("Sigma Color: ${_sigmaColor.toStringAsFixed(1)}"),
-            Slider(
-              value: _sigmaColor,
-              min: 10.0,
-              max: 150.0,
-              divisions: 14,
-              label: "${_sigmaColor.toStringAsFixed(1)}",
-              onChanged: (value) => setState(() => _sigmaColor = value),
-            ),
+              Text("Sigma Color: ${_sigmaColor.toStringAsFixed(1)}"),
+              Slider(
+                value: _sigmaColor,
+                min: 10.0,
+                max: 150.0,
+                divisions: 14,
+                label: "${_sigmaColor.toStringAsFixed(1)}",
+                onChanged: (value) => setState(() => _sigmaColor = value),
+              ),
 
-            Text("Sigma Space: ${_sigmaSpace.toStringAsFixed(1)}"),
-            Slider(
-              value: _sigmaSpace,
-              min: 10.0,
-              max: 150.0,
-              divisions: 14,
-              label: "${_sigmaSpace.toStringAsFixed(1)}",
-              onChanged: (value) => setState(() => _sigmaSpace = value),
-            ),
+              Text("Sigma Space: ${_sigmaSpace.toStringAsFixed(1)}"),
+              Slider(
+                value: _sigmaSpace,
+                min: 10.0,
+                max: 150.0,
+                divisions: 14,
+                label: "${_sigmaSpace.toStringAsFixed(1)}",
+                onChanged: (value) => setState(() => _sigmaSpace = value),
+              ),
 
-            SwitchListTile(
-              title: const Text("Return as Base64"),
-              value: _returnBase64,
-              onChanged: (value) => setState(() => _returnBase64 = value),
-            ),
-          ],
+              SwitchListTile(
+                title: const Text("Return as Base64"),
+                value: _returnBase64,
+                onChanged: (value) => setState(() => _returnBase64 = value),
+              ),
+            ],
+          ),
         ),
       ),
     );

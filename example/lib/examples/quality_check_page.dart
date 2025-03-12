@@ -62,38 +62,41 @@ class _QualityCheckPageState extends State<QualityCheckPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Image Quality Check")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: _pickImageAndCheckQuality,
-              child: const Text("Pick Image"),
-            ),
-            const SizedBox(height: 10),
-            if (_image != null) Image.memory(_image!, height: 150),
-            const SizedBox(height: 10),
-            if (_brightness != null)
-              Text("Brightness: ${_brightness!.toStringAsFixed(2)}"),
-            if (_glare != null) Text("Glare: ${_glare!.toStringAsFixed(2)}"),
-            if (_snr != null) Text("SNR: ${_snr!.toStringAsFixed(2)}"),
-            if (_contrast != null)
-              Text("Contrast: ${_contrast!.toStringAsFixed(2)}"),
-            if (_resolution != null) Text("Resolution: $_resolution"),
-            const SizedBox(height: 10),
-            if (_isQualityAcceptable != null)
-              Text(
-                _isQualityAcceptable == true
-                    ? "✅ Image quality is acceptable!"
-                    : "❌ Image quality is not acceptable. Try again.",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color:
-                      _isQualityAcceptable == true ? Colors.green : Colors.red,
-                ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: _pickImageAndCheckQuality,
+                child: const Text("Pick Image"),
               ),
-          ],
+              const SizedBox(height: 10),
+              if (_image != null) Image.memory(_image!, height: 150),
+              const SizedBox(height: 10),
+              if (_brightness != null)
+                Text("Brightness: ${_brightness!.toStringAsFixed(2)}"),
+              if (_glare != null) Text("Glare: ${_glare!.toStringAsFixed(2)}"),
+              if (_snr != null) Text("SNR: ${_snr!.toStringAsFixed(2)}"),
+              if (_contrast != null)
+                Text("Contrast: ${_contrast!.toStringAsFixed(2)}"),
+              if (_resolution != null) Text("Resolution: $_resolution"),
+              const SizedBox(height: 10),
+              if (_isQualityAcceptable != null)
+                Text(
+                  _isQualityAcceptable == true
+                      ? "✅ Image quality is acceptable!"
+                      : "❌ Image quality is not acceptable. Try again.",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _isQualityAcceptable == true
+                        ? Colors.green
+                        : Colors.red,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

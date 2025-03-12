@@ -61,25 +61,28 @@ class _ApplyGammaPageState extends State<ApplyGammaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Apply Gamma Correction")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ElevatedButton(
-                onPressed: _pickAndApplyGamma, child: const Text("Pick Image")),
-            const SizedBox(height: 10),
-            if (_originalImage != null)
-              Image.memory(_originalImage!, height: 150),
-            const SizedBox(height: 10),
-            if (_processedImage != null)
-              Image.memory(_processedImage!, height: 150),
-            if (_base64String != null) Text(_base64String!.substring(0, 100)),
-            SwitchListTile(
-              title: const Text("Return as Base64"),
-              value: _returnBase64,
-              onChanged: (value) => setState(() => _returnBase64 = value),
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              ElevatedButton(
+                  onPressed: _pickAndApplyGamma,
+                  child: const Text("Pick Image")),
+              const SizedBox(height: 10),
+              if (_originalImage != null)
+                Image.memory(_originalImage!, height: 150),
+              const SizedBox(height: 10),
+              if (_processedImage != null)
+                Image.memory(_processedImage!, height: 150),
+              if (_base64String != null) Text(_base64String!.substring(0, 100)),
+              SwitchListTile(
+                title: const Text("Return as Base64"),
+                value: _returnBase64,
+                onChanged: (value) => setState(() => _returnBase64 = value),
+              ),
+            ],
+          ),
         ),
       ),
     );

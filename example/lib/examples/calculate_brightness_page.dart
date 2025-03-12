@@ -51,19 +51,21 @@ class _CalculateBrightnessPageState extends State<CalculateBrightnessPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Calculate Brightness")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ElevatedButton(
-                onPressed: _pickImageAndCalculate,
-                child: const Text("Pick Image")),
-            const SizedBox(height: 10),
-            if (_image != null) Image.memory(_image!, height: 150),
-            const SizedBox(height: 10),
-            if (_brightness != null)
-              Text("Brightness: ${_brightness!.toStringAsFixed(2)}"),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              ElevatedButton(
+                  onPressed: _pickImageAndCalculate,
+                  child: const Text("Pick Image")),
+              const SizedBox(height: 10),
+              if (_image != null) Image.memory(_image!, height: 150),
+              const SizedBox(height: 10),
+              if (_brightness != null)
+                Text("Brightness: ${_brightness!.toStringAsFixed(2)}"),
+            ],
+          ),
         ),
       ),
     );

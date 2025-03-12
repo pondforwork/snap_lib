@@ -51,18 +51,20 @@ class _CalculateResolutionPageState extends State<CalculateResolutionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Calculate Resolution")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ElevatedButton(
-                onPressed: _pickImageAndCalculate,
-                child: const Text("Pick Image")),
-            const SizedBox(height: 10),
-            if (_image != null) Image.memory(_image!, height: 150),
-            const SizedBox(height: 10),
-            if (_resolution != null) Text("Resolution: $_resolution"),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              ElevatedButton(
+                  onPressed: _pickImageAndCalculate,
+                  child: const Text("Pick Image")),
+              const SizedBox(height: 10),
+              if (_image != null) Image.memory(_image!, height: 150),
+              const SizedBox(height: 10),
+              if (_resolution != null) Text("Resolution: $_resolution"),
+            ],
+          ),
         ),
       ),
     );

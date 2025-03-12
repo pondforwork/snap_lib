@@ -50,19 +50,21 @@ class _CalculateContrastPageState extends State<CalculateContrastPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Calculate Contrast")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ElevatedButton(
-                onPressed: _pickImageAndCalculate,
-                child: const Text("Pick Image")),
-            const SizedBox(height: 10),
-            if (_image != null) Image.memory(_image!, height: 150),
-            const SizedBox(height: 10),
-            if (_contrast != null)
-              Text("Contrast: ${_contrast!.toStringAsFixed(2)}"),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              ElevatedButton(
+                  onPressed: _pickImageAndCalculate,
+                  child: const Text("Pick Image")),
+              const SizedBox(height: 10),
+              if (_image != null) Image.memory(_image!, height: 150),
+              const SizedBox(height: 10),
+              if (_contrast != null)
+                Text("Contrast: ${_contrast!.toStringAsFixed(2)}"),
+            ],
+          ),
         ),
       ),
     );

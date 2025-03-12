@@ -48,84 +48,89 @@ class _EnhanceSharpenPageState extends State<EnhanceSharpenPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Enhance Sharpen Example")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: _pickAndEnhanceSharpen,
-              child: const Text("Pick & Enhance Image"),
-            ),
-            const SizedBox(height: 10),
-
-            // Display Original Image
-            if (_originalImage != null) ...[
-              const Text("Original Image",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Image.memory(_originalImage!, height: 150),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: _pickAndEnhanceSharpen,
+                child: const Text("Pick & Enhance Image"),
+              ),
               const SizedBox(height: 10),
-            ],
 
-            // Display Processed Image
-            if (_processedImage != null) ...[
-              const Text("Processed Image",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Image.memory(_processedImage!, height: 150),
-              const SizedBox(height: 10),
-            ],
-
-            // Display Base64 String (First 100 characters)
-            if (_base64String != null) ...[
-              const Text("Processed Image (Base64)"),
-              Text(_base64String!.substring(0, 100) + "..."),
-            ],
-
-            const SizedBox(height: 20),
-
-            // Strength Slider
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Sharpening Strength",
+              // Display Original Image
+              if (_originalImage != null) ...[
+                const Text("Original Image",
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Slider(
-                  value: _strength,
-                  min: 0.1,
-                  max: 3.0,
-                  divisions: 10,
-                  label: _strength.toStringAsFixed(1),
-                  onChanged: (value) => setState(() => _strength = value),
-                ),
+                Image.memory(_originalImage!, height: 150),
+                const SizedBox(height: 10),
               ],
-            ),
 
-            // Blur Kernel Size Slider
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Blur Kernel Size",
+              // Display Processed Image
+              if (_processedImage != null) ...[
+                const Text("Processed Image",
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Slider(
-                  value: _blurKernelSize,
-                  min: 3.0,
-                  max: 9.0,
-                  divisions: 6,
-                  label: _blurKernelSize.toStringAsFixed(1),
-                  onChanged: (value) => setState(() => _blurKernelSize = value),
-                ),
+                Image.memory(_processedImage!, height: 150),
+                const SizedBox(height: 10),
               ],
-            ),
 
-            // Return as Base64 Toggle
-            SwitchListTile(
-              title: const Text("Return as Base64"),
-              value: _returnBase64,
-              onChanged: (value) => setState(() => _returnBase64 = value),
-            ),
-          ],
+              // Display Base64 String (First 100 characters)
+              if (_base64String != null) ...[
+                const Text("Processed Image (Base64)"),
+                Text(_base64String!.substring(0, 100) + "..."),
+              ],
+
+              const SizedBox(height: 20),
+
+              // Strength Slider
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Sharpening Strength",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Slider(
+                    value: _strength,
+                    min: 0.1,
+                    max: 3.0,
+                    divisions: 10,
+                    label: _strength.toStringAsFixed(1),
+                    onChanged: (value) => setState(() => _strength = value),
+                  ),
+                ],
+              ),
+
+              // Blur Kernel Size Slider
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Blur Kernel Size",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Slider(
+                    value: _blurKernelSize,
+                    min: 3.0,
+                    max: 9.0,
+                    divisions: 6,
+                    label: _blurKernelSize.toStringAsFixed(1),
+                    onChanged: (value) =>
+                        setState(() => _blurKernelSize = value),
+                  ),
+                ],
+              ),
+
+              // Return as Base64 Toggle
+              SwitchListTile(
+                title: const Text("Return as Base64"),
+                value: _returnBase64,
+                onChanged: (value) => setState(() => _returnBase64 = value),
+              ),
+            ],
+          ),
         ),
       ),
     );

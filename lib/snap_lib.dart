@@ -39,11 +39,12 @@ class SnapLib {
       double glarePercent = 0.0,
       String resolution = "0x0",
       double gamma = 1.0,
-      bool useBilateralFilter = true,
+      bool applyGamma = true,
+      bool reduceNoise = true,
+      bool enhanceSharpen = true,
       int d = 9,
       double sigmaColor = 75.0,
       double sigmaSpace = 75.0,
-      bool useSharpening = true,
       double sharpenStrength = 1.0,
       double blurKernelSize = 3.0,
       bool returnBase64 = true}) async {
@@ -55,11 +56,11 @@ class SnapLib {
       'glarePercent': glarePercent,
       'resolution': resolution,
       'gamma': gamma,
-      'useBilateralFilter': useBilateralFilter,
+      'useBilateralFilter': applyGamma,
       'd': d,
       'sigmaColor': sigmaColor,
       'sigmaSpace': sigmaSpace,
-      'useSharpening': useSharpening,
+      'useSharpening': enhanceSharpen,
       'sharpenStrength': sharpenStrength,
       'blurKernelSize': blurKernelSize,
       'returnBase64': returnBase64,
@@ -118,7 +119,6 @@ class SnapLib {
     return await _channel.invokeMethod('calculateSNR', {'image': imageBytes});
   }
 
-  /// **Calculate Contrast**
   static Future<double?> calculateContrast(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('calculateContrast', {'image': imageBytes});
@@ -152,7 +152,6 @@ class SnapLib {
     });
   }
 
-  /// **Calculate Resolution**
   static Future<String?> calculateResolution(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('calculateResolution', {'image': imageBytes});
