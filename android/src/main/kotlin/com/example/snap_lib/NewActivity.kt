@@ -150,8 +150,8 @@ class NewActivity : AppCompatActivity() {
 
     private lateinit var imageProcessorPlugin: ImageProcessorPlugin
 
-    //Image Processor Class
-
+    // ตัวแปรรอรับค่า Base 64 ที่จะส่งคืน
+    private var base64Image = "";
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -386,22 +386,15 @@ class NewActivity : AppCompatActivity() {
                                     // รับ bitmap ภาพที่คมที่สุดเพื่อมา Process
                                     val sharpestBitmapMat = bitmapToMat(bitmapList[sharPestImageIndex])
 
-                                    val contrastvalue = imageProcessorPlugin.calculateContrast(sharpestBitmapMat)
+                                    val contrastValue = imageProcessorPlugin.calculateContrast(sharpestBitmapMat)
                                     val resolutionValue = imageProcessorPlugin.calculateResolution(sharpestBitmapMat)
                                     val snrValue = imageProcessorPlugin.calculateSNR(sharpestBitmapMat)
 
+                                    // ทำการ Preprocessing
+                                    val processedMat = imageProcessorPlugin.processImage(sharpestBitmapMat)
 
-//                                    val contrastValue = calculateContrast(sharpestBitmapMat)
-//                                    val resolutionValue = calculateResolution(sharpestBitmapMat)
-//                                    val snrValue = calculateSNR(sharpestBitmapMat)
+                                    base64Image = imageProcessorPlugin.convertMatToBase64(processedMat)
 
-//                                    val processedMat = preprocessing(snrValue, contrastValue, resolutionValue, sharpestBitmapMat)
-
-                                    // บันทึกรูป Original ลง Storage
-//                                    saveMatToStorage(context,sharpestBitmapMat,"frontCardOriginal")
-
-                                    // บันทึกลง Storage
-//                                    saveMatToStorage(context,processedMat,"frontCardProcessed")
                                 }
                             }
                         }
@@ -461,10 +454,12 @@ class NewActivity : AppCompatActivity() {
                 },
                 onConfirm = {
                     val resultIntent = Intent()
-                    if(pathFinal.isNotEmpty()) {
-                        resultIntent.putExtra("result", pathFinal.toString())
-                        setResult(RESULT_OK, resultIntent)
-                        Log.w("pathFinal", pathFinal.toString())
+                    if (base64Image.isNotEmpty()) {
+                        resultIntent.putExtra("result", base64Image)
+                        setResult(RESULT_OK, resultIntent) // ใช้ resultIntent แทน base64Image
+                        // Log.w("base64Image", base64Image)
+                        finish()
+                    } else {
                         finish()
                     }
 
@@ -545,6 +540,7 @@ class NewActivity : AppCompatActivity() {
                         cameraViewModel.updateGuideText(foundMessage)
                         isFound = true
                     }else{
+                        isFound = false
                         cameraViewModel.updateGuideText(notFoundMessage)
                     }
                 } else {

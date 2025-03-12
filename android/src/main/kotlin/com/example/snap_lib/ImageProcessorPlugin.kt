@@ -309,7 +309,7 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         Utils.matToBitmap(mat, bitmap)
         return bitmap
     }
-    private fun processImage(
+    fun processImage(
         inputMat: Mat,
         gamma: Double = 1.0,
         d: Int = 9,
@@ -463,7 +463,7 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
 
-    private fun convertMatToBase64(mat: Mat): String {
+    fun convertMatToBase64(mat: Mat): String {
         val processedBitmap = matToBitmap(mat)
         val outputStream = ByteArrayOutputStream()
         processedBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
