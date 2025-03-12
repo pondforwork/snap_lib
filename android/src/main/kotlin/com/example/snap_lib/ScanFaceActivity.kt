@@ -24,6 +24,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -152,9 +153,10 @@ data class OverlaySettings(
 @Composable
 fun FaceDetectionScreen(settings: OverlaySettings) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var detectedFace by remember { mutableStateOf(false) }
-    val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     val executor = ContextCompat.getMainExecutor(context)
 
     val previewView = remember {
@@ -166,9 +168,11 @@ fun FaceDetectionScreen(settings: OverlaySettings) {
         }
     }
 
-    val imageAnalyzer = ImageAnalysis.Builder()
-        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        .build()
+    val imageAnalyzer = remember {
+        ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+    }
 
     imageAnalyzer.setAnalyzer(executor) { imageProxy ->
         val bitmap = imageProxy.toBitmap()
@@ -176,7 +180,6 @@ fun FaceDetectionScreen(settings: OverlaySettings) {
         detectedFace = detected
         imageProxy.close()
     }
-
 
     LaunchedEffect(Unit) {
         try {
@@ -187,11 +190,11 @@ fun FaceDetectionScreen(settings: OverlaySettings) {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
-                val imageAnalyzer = ImageAnalysis.Builder()
+                val imageAnalysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
 
-                imageAnalyzer.setAnalyzer(executor) { imageProxy ->
+                imageAnalysis.setAnalyzer(executor) { imageProxy ->
                     val bitmap = imageProxy.toBitmap()
                     val detected = processImageWithTFLite(context.applicationContext, bitmap)
                     detectedFace = detected
@@ -200,11 +203,12 @@ fun FaceDetectionScreen(settings: OverlaySettings) {
 
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
-                    context as ComponentActivity,
+                    lifecycleOwner,
                     CameraSelector.DEFAULT_FRONT_CAMERA,
                     preview,
-                    imageAnalyzer
+                    imageAnalysis
                 )
+
             }, executor)
         } catch (e: Exception) {
             Log.e("CameraX", "Failed to initialize CameraX", e)
@@ -276,19 +280,26 @@ fun CameraOverlay(
     }
 }
 
-
 fun processImageWithTFLite(context: Context, bitmap: Bitmap): Boolean {
-    val appContext = context.applicationContext // ✅ Ensures safe context usage
-    val model = ModelFrontNew.newInstance(appContext)
-
+    val model = ModelFrontNew.newInstance(context) // ✅ Ensure context is passed correctly
     val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.FLOAT32)
-    val byteBuffer = convertBitmapToByteBuffer(bitmap)
+
+    val byteBuffer = convertBitmapToByteBuffer(bitmap) // ✅ Convert bitmap to tensor buffer
     inputFeature0.loadBuffer(byteBuffer)
 
     val outputs = model.process(inputFeature0)
     model.close()
 
-    return outputs.outputFeature0AsTensorBuffer.floatArray[0] > 0.7
+    val probabilities = outputs.outputFeature0AsTensorBuffer.floatArray
+
+    // ✅ Find the highest probability class
+    val detectedClass = probabilities.indices.maxByOrNull { probabilities[it] } ?: -1
+
+    // ✅ Print the detected class and probabilities
+    Log.d("TFLite", "Detected Class: $detectedClass")
+    Log.d("TFLite", "Probabilities: ${probabilities.contentToString()}")
+
+    return probabilities[0] > 0.7 // ✅ Adjust threshold based on model accuracy
 }
 
 fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
