@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
+import 'package:snap_lib/settings/scan_face_setting.dart';
 import 'package:snap_lib/snap_lib.dart';
 import 'package:snap_lib_example/examples/apply_gamma_page.dart';
 import 'package:snap_lib_example/examples/calculate_brightness_page.dart';
@@ -93,14 +94,23 @@ class HomeScreen extends StatelessWidget {
 
           // Normal Button for openScanFace
           _buildCustomButton(
-            title: "Open Scan Face",
-            onTap: () => SnapLib.startFrontSnap(
-                titleMessage: "สแกนหน้า",
-                initialMessage: "กรุณาวางใบหน้าในกรอบ",
-                foundMessage: "ถือนิ่งๆ",
-                notFoundMessage: "กรุณาวางใบหน้าในกรอบ",
-                snapMode: 'front'),
-          ),
+              title: "Open Scan Face",
+              onTap: () => SnapLib.startFaceScan(
+                    ScanFaceSettings(
+                      guideText: "กรุณาให้ใบหน้าอยู่ในกรอบ",
+                      instructionText: "อย่าปิดตา จมูก ปาก หรือคาง",
+                      successText: "โปรดถือไว้",
+                      borderColorSuccess: 0xFF00FF00,
+                      borderColorDefault: 0xFFFF0000,
+                      textColorDefault: 0xFFFFFFFF,
+                      textColorSuccess: 0xFF00FF00,
+                      guideFontSize: 24.0,
+                      instructionFontSize: 20.0,
+                      guideTextColor: 0xFFFFFF00,
+                      instructionTextColor: 0xFF00FFFF,
+                      faceSnapMode: FaceSnapMode.strict, // Use strict mode
+                    ),
+                  ))
         ],
       ),
 
