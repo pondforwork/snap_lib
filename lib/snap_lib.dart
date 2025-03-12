@@ -185,11 +185,17 @@ class SnapLib {
 
   static Future<void> startFrontSnap(
       FrontSnapSettings frontSnapSettings) async {
-    return await _snapChannel.invokeMethod('startFrontSnap', {
+    var result = await _snapChannel.invokeMethod('startFrontSnap', {
       'titleMessage': frontSnapSettings.titleMessage,
       'initialMessage': frontSnapSettings.initialMessage,
       'foundMessage': frontSnapSettings.foundMessage,
       'notFoundMessage': frontSnapSettings.notFoundMessage
     });
+    if (result == null) {
+      print("result is null");
+    } else {
+      print("result is Not Null ");
+    }
+    return;
   }
 }
