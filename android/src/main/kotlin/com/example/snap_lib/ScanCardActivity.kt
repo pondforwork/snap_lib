@@ -1,7 +1,6 @@
 package com.example.snap_lib
 // Import statements for Android and Compose
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -13,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.core.CameraSelector
 import androidx.compose.ui.platform.LocalLifecycleOwner
 
@@ -37,7 +35,6 @@ import android.graphics.Rect
 import android.os.Build
 import android.os.CountDownTimer
 import android.util.Log
-import android.util.Size
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.ImageAnalysis
@@ -45,14 +42,6 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -82,16 +71,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.snap_lib.ml.ModelFront
@@ -112,10 +98,9 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 import org.opencv.core.MatOfDouble
-import com.example.snap_lib.ImageProcessorPlugin as Processor
 import com.example.snap_lib.ImageProcessorPlugin
 
-class NewActivity : AppCompatActivity() {
+class ScanCardActivity : AppCompatActivity() {
 
     // กำหนดตัวแปร Model TFlite
     private lateinit var model: ModelFront;
@@ -147,6 +132,7 @@ class NewActivity : AppCompatActivity() {
     private var initialGuideText = "กรุณาวางบัตรในกรอบ"
     private var foundMessage = "พบบัตร"
     private var notFoundMessage = "ไม่พบบัตร"
+    private var snapMode = "front"
 
     private lateinit var imageProcessorPlugin: ImageProcessorPlugin
 
@@ -161,12 +147,22 @@ class NewActivity : AppCompatActivity() {
         initialGuideText = intent.getStringExtra("initialMessage") ?: "กรุณาวางบัตรในกรอบ"
         foundMessage = intent.getStringExtra("foundMessage") ?: "พบบัตร ถือค้างไว้"
         notFoundMessage = intent.getStringExtra("notFoundMessage") ?: "ไม่พบบัตร"
+        snapMode = intent.getStringExtra("snapMode") ?: "front"
+
+        // ถ้า snapMode = front ให้กำหนดโมเดล Tf Lite เป็นหน้าบัตร
+        model = if (snapMode == "front") {
+            titleMessage = "หน้าบัตร sss"
+            ModelFront.newInstance(this)  // ✅ กำหนดค่าให้ model ก่อน
+        } else {
+            titleMessage = "หลังบัตร sss"
+            ModelFront.newInstance(this)  // ✅ กำหนดค่าให้ model ก่อน
+        }
+
 
         // Request camera permission
         checkAndRequestCameraPermission(this, CAMERA_REQUEST_CODE)
 
         // สร้าง Model เมื่อเปิดหน้านี้
-        model = ModelFront.newInstance(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         imageProcessorPlugin = ImageProcessorPlugin()

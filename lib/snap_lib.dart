@@ -189,7 +189,8 @@ class SnapLib {
       'titleMessage': frontSnapSettings.titleMessage,
       'initialMessage': frontSnapSettings.initialMessage,
       'foundMessage': frontSnapSettings.foundMessage,
-      'notFoundMessage': frontSnapSettings.notFoundMessage
+      'notFoundMessage': frontSnapSettings.notFoundMessage,
+      'snapMode': frontSnapSettings.snapMode.name,
     });
     if (result == null) {
       return null;
