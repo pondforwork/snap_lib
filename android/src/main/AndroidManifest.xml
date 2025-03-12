@@ -11,5 +11,8 @@
   <application>
     <activity android:name=".NewActivity" android:theme="@style/Theme.SnapLib" />
 
+    <activity android:name=".ScanFaceActivity" android:theme="@style/Theme.SnapLib" />
+
+
     </application>
 </manifest>
