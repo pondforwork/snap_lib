@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
               title: "Open Scan Face",
               onTap: () => SnapLib.startFaceScan(
                     ScanFaceSettings(
-                      guideText: "กรุณาให้ใบหน้าอยู่ในกรอบ",
+                      guideText: "กรุณาให้ใบหน้าอยู่ในกรอบ7y67yy",
                       instructionText: "อย่าปิดตา จมูก ปาก หรือคาง",
                       successText: "โปรดถือไว้",
                       borderColorSuccess: 0xFF00FF00,
