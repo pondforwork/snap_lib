@@ -97,6 +97,10 @@ import androidx.lifecycle.ViewModel
 import com.example.snap_lib.ml.ModelFront
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import org.opencv.android.Utils
+import org.opencv.core.Core
+import org.opencv.core.Mat
+import org.opencv.imgproc.Imgproc
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.File
@@ -107,10 +111,13 @@ import java.nio.ByteOrder
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+import org.opencv.core.MatOfDouble
+import com.example.snap_lib.ImageProcessorPlugin as Processor
+import com.example.snap_lib.ImageProcessorPlugin
 
 class NewActivity : AppCompatActivity() {
 
-//    // กำหนดตัวแปร Model TFlite
+    // กำหนดตัวแปร Model TFlite
     private lateinit var model: ModelFront;
     private lateinit var cameraExecutor: ExecutorService
     private val CAMERA_REQUEST_CODE = 2001
@@ -127,14 +134,22 @@ class NewActivity : AppCompatActivity() {
     // จัดเก็บ Bitmap ของรูปภาพทั้ง 5
     private val bitmapList: MutableList<Bitmap> = mutableListOf()
     private var sharPestImageIndex = 0
-    // private lateinit var mat: Mat
+
+    // Mat สำหรับ Open CV
+    private lateinit var mat: Mat
     // Path ของภาพที่ชัดที่สุด ที่จะนำมาใช้
     private var pathFinal = ""
     private val cameraViewModel: CameraViewModel by viewModels()
     private val rectPositionViewModel: RectPositionViewModel by viewModels()
 
-    // การปรับแต่งข้อความ
-    private var titleMessage = "กรุณาวางบัตรในกรอบ"
+    // การปรับแต่งข้อความและตำแหน่งข้อความ
+    private var titleMessage = "ถ่ายภาพหน้าบัตร"
+    private var initialGuideText = "กรุณาวางบัตรในกรอบ"
+
+    private lateinit var imageProcessorPlugin: ImageProcessorPlugin
+
+    //Image Processor Class
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,24 +163,26 @@ class NewActivity : AppCompatActivity() {
         // สร้าง Model เมื่อเปิดหน้านี้
         model = ModelFront.newInstance(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        imageProcessorPlugin = ImageProcessorPlugin()
+
+
         setContent {
             MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color.Black // Set background color to black
+                    color = Color.Black
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize(),
-//                                .padding(16.dp),
                             verticalArrangement = Arrangement.SpaceBetween, // Space out elements vertically
                             horizontalAlignment = Alignment.CenterHorizontally // Center elements horizontally
                         ) {
-                            // Title
+                            // Title แสดงด้านบน
                              Text(
  //                                fontFamily = fontKanit,
-
                                  text = titleMessage,
                                  color = Color.White,
                                  style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
@@ -174,7 +191,6 @@ class NewActivity : AppCompatActivity() {
                                      .padding(top = 16.dp)
                                      .wrapContentWidth()
                              )
-
                             // Camera preview with overlay
                             CameraWithOverlay(
                                 modifier = Modifier
@@ -183,14 +199,26 @@ class NewActivity : AppCompatActivity() {
                                 cameraViewModel = cameraViewModel,
                                 rectPositionViewModel = rectPositionViewModel
                             )
-
-                            // Cancel button
-
                         }
                     }
                 }
             }
         }
+
+        // Initialize ImageProcessorPlugin
+        // Example call to a method from ImageProcessorPlugin
+        // val exampleBitmap: Bitmap = // ... obtain a Bitmap ...
+        // val processedMat = imageProcessorPlugin.processImage(
+        //     inputMat = imageProcessorPlugin.bitmapToMat(exampleBitmap),
+        //     gamma = 1.0,
+        //     d = 9,
+        //     sigmaColor = 75.0,
+        //     sigmaSpace = 75.0,
+        //     sharpenStrength = 1.0,
+        //     blurKernelWidth = 3.0,
+        //     blurKernelHeight = 3.0
+        // )
+        // ... use processedMat ...
     }
 
     @Composable
@@ -200,20 +228,20 @@ class NewActivity : AppCompatActivity() {
         rectPositionViewModel: RectPositionViewModel
     ) {
         // Animation states
-        val selectedSize = remember { mutableStateOf(0.8f) } // Default rectangle size
-        val animatedRectWidth = animateFloatAsState(
-            targetValue = selectedSize.value,
-            animationSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
-        )
+//        val selectedSize = remember { mutableStateOf(0.8f) } // Default rectangle size
+//        val animatedRectWidth = animateFloatAsState(
+//            targetValue = selectedSize.value,
+//            animationSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
+//        )
 
-        val pulseScale = rememberInfiniteTransition().animateFloat(
-            initialValue = 1f,
-            targetValue = 1.1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1000, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
-            )
-        )
+//        val pulseScale = rememberInfiniteTransition().animateFloat(
+//            initialValue = 1f,
+//            targetValue = 1.1f,
+//            animationSpec = infiniteRepeatable(
+//                animation = tween(1000, easing = FastOutSlowInEasing),
+//                repeatMode = RepeatMode.Reverse
+//            )
+//        )
 
         Box(
             modifier = modifier
@@ -232,7 +260,8 @@ class NewActivity : AppCompatActivity() {
 
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val creditCardAspectRatio = 3.37f / 2.125f
-                val rectWidth = size.width * animatedRectWidth.value * pulseScale.value
+//                val rectWidth = size.width * animatedRectWidth.value * pulseScale.value
+                val rectWidth = size.width * 0.8f // Fixed rectangle size
                 val rectHeight = rectWidth / creditCardAspectRatio
                 val rectLeft = (size.width - rectWidth) / 2
                 val rectTop = (size.height - rectHeight) / 2
@@ -249,7 +278,6 @@ class NewActivity : AppCompatActivity() {
                     cornerRadius = CornerRadius(cornerRadius, cornerRadius),
                     blendMode = BlendMode.Clear
                 )
-
                 drawRoundRect(
                     color = Color.Gray,
                     topLeft = Offset(rectLeft, rectTop),
@@ -257,16 +285,8 @@ class NewActivity : AppCompatActivity() {
                     cornerRadius = CornerRadius(cornerRadius, cornerRadius),
                     style = Stroke(width = 6f)
                 )
-
-//                rectPositionViewModel.updateRectPosition(
-//                    left = rectLeft,
-//                    top = rectTop,
-//                    right = rectLeft + rectWidth,
-//                    bottom = rectTop + rectHeight
-//                )
             }
 
-            // Guide text below the rectangle
             Text(
 //                fontFamily = fontKanit,
                 text = cameraViewModel.guideText,
@@ -314,7 +334,7 @@ class NewActivity : AppCompatActivity() {
                     val resolutionSelector1 = ResolutionSelector.Builder()
                         .setResolutionStrategy(
                             ResolutionStrategy(
-                                Size(1080, 1440), // ความละเอียดที่ต้องการ
+                                android.util.Size(1080, 1440), // ความละเอียดที่ต้องการ
                                 ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER // fallback หากไม่รองรับ
                             )
                         )
@@ -347,8 +367,8 @@ class NewActivity : AppCompatActivity() {
                                 bitmapToJpg(bitmapToShow!!,context,"image${bitmapList.size.toString()}.jpg")
                                 if(bitmapList.size == 3){
                                     // ถ้าครบ 3 รูปแล้วให้หารูปที่คมชัดที่สุด จาก Bitmap List
-//                                    var sharPestImage = findSharpestImage()
-//                                    println("Sharpest Image Index is: ${sharPestImage.first}, Variance: ${sharPestImage.second}")
+                                    var sharPestImage = findSharpestImage()
+                                    println("Sharpest Image Index is: ${sharPestImage.first}, Variance: ${sharPestImage.second}")
 
                                     // บันทึก Index ของภาพที่ชัดที่สุด ไว้ในตัวแปร
 //                                    sharPestImageIndex = sharPestImage.first!!
@@ -359,7 +379,12 @@ class NewActivity : AppCompatActivity() {
                                     // พักการ Predict
                                     isPredicting = false
                                     // รับ bitmap ภาพที่คมที่สุดเพื่อมา Process
-//                                    val sharpestBitmapMat = bitmapToMat(bitmapList[sharPestImageIndex])
+                                    val sharpestBitmapMat = bitmapToMat(bitmapList[sharPestImageIndex])
+
+                                    val contrastvalue = imageProcessorPlugin.calculateContrast(sharpestBitmapMat)
+                                    val resolutionValue = imageProcessorPlugin.calculateResolution(sharpestBitmapMat)
+                                    val snrValue = imageProcessorPlugin.calculateSNR(sharpestBitmapMat)
+
 
 //                                    val contrastValue = calculateContrast(sharpestBitmapMat)
 //                                    val resolutionValue = calculateResolution(sharpestBitmapMat)
@@ -394,7 +419,7 @@ class NewActivity : AppCompatActivity() {
                                 }
                             }
                         }
-//                        imageProxy.close()
+                        imageProxy.close()
                     }
 
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -426,7 +451,7 @@ class NewActivity : AppCompatActivity() {
                     // กลับมา Predict หลังจากปิด Dialog
                     isPredicting = true
                     //รีเซ็ต GuideText เมื่อปิด Dialog (ถ่ายใหม่)
-                    cameraViewModel.updateGuideText("กรุณาวางบัตรในกรอบ")
+                    cameraViewModel.updateGuideText(initialGuideText)
                     isFound = false
                 },
                 onConfirm = {
@@ -494,9 +519,10 @@ class NewActivity : AppCompatActivity() {
             if (currentTime - lastProcessedTime >= 200) {
 //                Log.d("NewActivity", "Processing image")
                 val bitmap = imageProxy.toBitmap()
-                // val rotatedBitmap = rotateBitmap(bitmap, 90f)
 
-                val outputBuffer = predictClasss(bitmap)
+                val rotatedBitmap = rotateBitmap(bitmap, 90f)
+
+                val outputBuffer = predictClasss(rotatedBitmap)
 
                 // ถ้าได้ Output ของการ Predict ออกมา
                 if (outputBuffer != null) {
@@ -508,11 +534,13 @@ class NewActivity : AppCompatActivity() {
                         ?: 4 // หากไม่มี index ที่เข้าเงื่อนไข ให้ใช้ค่า default เป็น 4
 
                     Log.d("NewActivity", "maxIndex: $maxIndex")
-
-                    // ถ้าเป็น Class 1
+                    // ถ้าเป็น Class 0
+                    // 0 คือ บัตรประชาชน
                     if (maxIndex == 0 ){
-                        cameraViewModel.updateGuideText("กรุณาวางบัตรในกรอบ")
-
+                        cameraViewModel.updateGuideText("ถือค้างไว้")
+                        isFound = true
+                    }else{
+                        cameraViewModel.updateGuideText(initialGuideText)
                     }
                 } else {
                     Log.d("NewActivity", "Output buffer is null")
@@ -522,10 +550,56 @@ class NewActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Log.e("NewActivity", "Error processing image", e)
-        } finally {
-            // isProcessing = false
-            imageProxy.close()
         }
+    }
+
+    private fun findSharpestImage(): Pair<Int?, Double> {
+        var sharpestIndex: Int? = null
+        var maxVariance = 0.0
+
+        for (i in bitmapList.indices) {
+            val bitmap = bitmapList[i]
+            val mat = bitmapToMat(bitmap) ?: continue
+
+            if (!mat.empty()) {
+                val variance = calculateLaplacianVariance(mat)
+                if (variance > maxVariance) {
+                    maxVariance = variance
+                    sharpestIndex = i
+                }
+                mat.release()
+            }
+        }
+        return Pair(sharpestIndex, maxVariance)
+    }
+
+    private fun bitmapToMat(bitmap: Bitmap): Mat {
+        val mat = Mat() // Create an empty Mat
+        Utils.bitmapToMat(bitmap, mat) // Convert Bitmap to Mat
+        return mat
+    }
+
+    private fun calculateLaplacianVariance(mat: Mat): Double {
+        val laplacian = Mat()
+        Imgproc.Laplacian(mat, laplacian, mat.depth())
+
+        val mean = MatOfDouble()
+        val stddev = MatOfDouble()
+
+        // Correct call to Core.meanStdDev
+        Core.meanStdDev(laplacian, mean, stddev)
+
+        val variance = stddev[0, 0][0] * stddev[0, 0][0] // Variance = (StdDev)^2
+        laplacian.release()
+
+        return variance
+    }
+
+
+    private fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Float): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(rotationDegrees) // Rotate the bitmap by the given angle
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
     private fun predictClasss(imageBytes: Bitmap): TensorBuffer? {
@@ -724,5 +798,6 @@ class RectPositionViewModel : ViewModel() {
         _rectPosition.value = Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
     }
 }
+
 
 

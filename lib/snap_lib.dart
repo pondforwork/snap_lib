@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
+import 'package:snap_lib/settings/front_snap_settings.dart';
 
 class SnapLib {
   static const MethodChannel _channel = MethodChannel('image_processor_plugin');
+  static const MethodChannel _snapChannel = MethodChannel('snap_plugin');
 
   /// **Process Image (General)**
   static Future<dynamic> processImage(Uint8List imageBytes,
@@ -181,9 +183,13 @@ class SnapLib {
         .invokeMethod('convertMatToBase64', {'image': imageBytes});
   }
 
-  /// **Start Front Camera Snap**
-  static Future<void> startFrontSnap(String titleMessage) async {
-    return await _channel
-        .invokeMethod('startFrontSnap', {'titleMessage': titleMessage});
+  static Future<void> startFrontSnap(
+      FrontSnapSettings frontSnapSettings) async {
+    return await _snapChannel.invokeMethod('startFrontSnap', {
+      'titleMessage': frontSnapSettings.titleMessage,
+      'initialMessage': frontSnapSettings.initialMessage,
+      'foundMessage': frontSnapSettings.foundMessage,
+      'notFoundMessage': frontSnapSettings.notFoundMessage
+    });
   }
 }

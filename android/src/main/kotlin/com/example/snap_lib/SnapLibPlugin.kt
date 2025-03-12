@@ -20,7 +20,7 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
   private lateinit var imageProcessor: ImageProcessorPlugin
 
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "image_processor_plugin")
+    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "snap_plugin")
     channel.setMethodCallHandler(this)
     context = flutterPluginBinding.applicationContext
 
