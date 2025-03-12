@@ -198,14 +198,20 @@ class SnapLib {
         .invokeMethod('convertMatToBase64', {'image': imageBytes});
   }
 
-  static Future<void> startFrontSnap(
+  static Future<String?> startFrontSnap(
       FrontSnapSettings frontSnapSettings) async {
-    return await _snapChannel.invokeMethod('startFrontSnap', {
+    var result = await _snapChannel.invokeMethod('startFrontSnap', {
       'titleMessage': frontSnapSettings.titleMessage,
       'initialMessage': frontSnapSettings.initialMessage,
       'foundMessage': frontSnapSettings.foundMessage,
-      'notFoundMessage': frontSnapSettings.notFoundMessage
+      'notFoundMessage': frontSnapSettings.notFoundMessage,
+      'snapMode': frontSnapSettings.snapMode.name,
     });
+    if (result == null) {
+      return null;
+    } else {
+      return result.toString();
+    }
   }
 
   static Future<void> openScanFace() async {

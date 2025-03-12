@@ -17,8 +17,9 @@ class MethodChannelSnapLib extends SnapLibPlatform {
   }
 
   @override
-  Future<void> startFrontSnap() async {
+  Future<String?> startFrontSnap() async {
     await methodChannel.invokeMethod<void>('startFrontSnap');
+    return null;
   }
 
   Future<double?> calculateBrightness(Uint8List imageBytes) async {
