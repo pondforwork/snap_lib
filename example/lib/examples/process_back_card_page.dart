@@ -27,36 +27,57 @@ class _ProcessBackCardPageState extends State<ProcessBackCardPage> {
   double _g = 1.0;
 
   Future<void> _pickAndProcessImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) return;
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
 
-    final imageBytes = await pickedFile.readAsBytes();
-    setState(() => _originalImage = imageBytes);
-    final resolutionImage = await SnapLib.calculateResolution(imageBytes);
+      final imageBytes = await pickedFile.readAsBytes();
+      setState(() => _originalImage = imageBytes);
+      final resolutionImage = await SnapLib.calculateResolution(imageBytes);
 
-    final result = await SnapLib.processBackCard(imageBytes,
-        resolution: resolutionImage!,
-        gamma: _gamma,
-        useBilateralFilter: _useBilateralFilter,
-        d: _d,
-        sigmaColor: _sigmaColor,
-        sigmaSpace: _sigmaSpace,
-        useSharpening: _useSharpening,
-        sharpenStrength: _sharpenStrength,
-        blurKernelSize: _blurKernelSize,
-        returnBase64: _returnBase64,
-        glarePercent: _g);
+      final result = await SnapLib.processBackCard(imageBytes,
+          resolution: resolutionImage!,
+          gamma: _gamma,
+          useBilateralFilter: _useBilateralFilter,
+          d: _d,
+          sigmaColor: _sigmaColor,
+          sigmaSpace: _sigmaSpace,
+          useSharpening: _useSharpening,
+          sharpenStrength: _sharpenStrength,
+          blurKernelSize: _blurKernelSize,
+          returnBase64: _returnBase64,
+          glarePercent: _g);
 
-    setState(() {
-      if (_returnBase64) {
-        _base64String = result as String;
-        _processedImage = null;
-      } else {
-        _processedImage = result as Uint8List;
-        _base64String = null;
-      }
-    });
+      setState(() {
+        if (_returnBase64) {
+          _base64String = result as String;
+          _processedImage = null;
+        } else {
+          _processedImage = result as Uint8List;
+          _base64String = null;
+        }
+      });
+    } catch (e) {
+      print(e);
+      _showErrorDialog("Error processing image: ${e.toString()}");
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   @override

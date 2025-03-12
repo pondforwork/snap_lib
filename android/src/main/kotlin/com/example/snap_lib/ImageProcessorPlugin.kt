@@ -279,6 +279,7 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 }
 
 
+
                 else -> result.notImplemented()
             }
         } catch (e: Exception) {
@@ -525,19 +526,34 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         require(d >= 1) { "d (diameter) must be at least 1" }
         require(sigmaColor >= 10) { "sigmaColor must be at least 10" }
         require(sigmaSpace >= 10) { "sigmaSpace must be at least 10" }
+
         val tempMat = mat.clone()
 
         when (tempMat.type()) {
-            CvType.CV_8UC4 -> Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_RGBA2BGR)
-            CvType.CV_8UC1 -> println("Grayscale image detected, no need for conversion")
-            else -> println("Unexpected Mat type: ${tempMat.type()}")
+            CvType.CV_8UC4 -> {
+                Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_RGBA2BGR) // Convert to BGR
+            }
+            CvType.CV_8UC1 -> {
+                println("Grayscale image detected, no need for conversion")
+            }
+            else -> {
+                println("Unexpected Mat type: ${tempMat.type()}")
+            }
         }
+
         println("Applying Bilateral Filter with d=$d, sigmaColor=$sigmaColor, sigmaSpace=$sigmaSpace")
 
         val output = Mat()
         Imgproc.bilateralFilter(tempMat, output, d, sigmaColor, sigmaSpace)
+
+        // Convert back to RGBA to maintain correct colors
+        if (output.type() == CvType.CV_8UC3) {
+            Imgproc.cvtColor(output, output, Imgproc.COLOR_BGR2RGBA)
+        }
+
         return output
     }
+
 
 
     fun enhanceSharpenUnsharpMask(
