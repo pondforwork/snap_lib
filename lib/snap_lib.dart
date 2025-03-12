@@ -183,7 +183,7 @@ class SnapLib {
         .invokeMethod('convertMatToBase64', {'image': imageBytes});
   }
 
-  static Future<void> startFrontSnap(
+  static Future<String?> startFrontSnap(
       FrontSnapSettings frontSnapSettings) async {
     var result = await _snapChannel.invokeMethod('startFrontSnap', {
       'titleMessage': frontSnapSettings.titleMessage,
@@ -192,10 +192,9 @@ class SnapLib {
       'notFoundMessage': frontSnapSettings.notFoundMessage
     });
     if (result == null) {
-      print("result is null");
+      return null;
     } else {
-      print("result is Not Null ");
+      return result.toString();
     }
-    return;
   }
 }
