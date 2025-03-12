@@ -25,7 +25,7 @@ fun CameraPreview(
                 val cameraProvider = cameraProviderFuture.get()
 
                 val preview = Preview.Builder().build()
-                val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
                 val imageAnalysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)

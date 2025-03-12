@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
 
 @Composable
 fun CameraOverlay(
@@ -30,9 +31,14 @@ fun CameraOverlay(
     borderColorDefault: Color = Color.Red,
     textColorDefault: Color = Color.White,
     textColorSuccess: Color = Color.Green,
-    borderWidth: Float = 8f
+    borderWidth: Float = 8f,
+    guideTextStyle: TextStyle = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Yellow),
+    instructionTextStyle: TextStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.Cyan),
+    guideTextAlignment: Alignment = Alignment.TopCenter,
+    instructionTextAlignment: Alignment = Alignment.BottomCenter,
+    paddingTop: Dp = 16.dp,
+    paddingBottom: Dp = 16.dp
 ) {
-    // Dynamic border color and text color based on guideText
     val borderColor by animateColorAsState(
         targetValue = if (guideText == successText) borderColorSuccess else borderColorDefault,
         animationSpec = tween(durationMillis = 500)
@@ -43,7 +49,6 @@ fun CameraOverlay(
     )
 
     Box(modifier = modifier.fillMaxSize()) {
-        // Transparent overlay with oval cutout
         Canvas(modifier = Modifier.fillMaxSize()) {
             val canvasWidth = size.width
             val canvasHeight = size.height
@@ -53,13 +58,11 @@ fun CameraOverlay(
             val ovalLeft = (canvasWidth - ovalWidth) / 2
             val ovalTop = (canvasHeight - ovalHeight) / 2
 
-            // Background outside the oval
             drawRect(
                 color = Color.Black.copy(alpha = 0.6f),
                 size = size
             )
 
-            // Clear the oval area
             drawOval(
                 color = Color.Transparent,
                 topLeft = Offset(ovalLeft, ovalTop),
@@ -67,7 +70,6 @@ fun CameraOverlay(
                 blendMode = BlendMode.Clear
             )
 
-            // Oval border
             drawOval(
                 color = borderColor,
                 topLeft = Offset(ovalLeft, ovalTop),
@@ -76,29 +78,20 @@ fun CameraOverlay(
             )
         }
 
-        // Guide Text
         BasicText(
             text = guideText,
-            style = TextStyle(
-                color = textColor,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            ),
+            style = guideTextStyle.copy(color = textColor),
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 16.dp)
+                .align(guideTextAlignment)
+                .padding(top = paddingTop)
         )
 
-        // Instruction Text
         BasicText(
             text = instructionText,
-            style = TextStyle(
-                color = Color.White,
-                fontSize = 16.sp
-            ),
+            style = instructionTextStyle.copy(color = Color.Magenta),
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp)
+                .align(instructionTextAlignment)
+                .padding(bottom = paddingBottom)
         )
     }
 }

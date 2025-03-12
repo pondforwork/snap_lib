@@ -1,0 +1,3 @@
+C:/New folder/snap_lib/example/android/opencv/.cxx/Debug/736672c1/x86_64/CMakeFiles/opencv_jni_shared.dir
+C:/New folder/snap_lib/example/android/opencv/.cxx/Debug/736672c1/x86_64/CMakeFiles/edit_cache.dir
+C:/New folder/snap_lib/example/android/opencv/.cxx/Debug/736672c1/x86_64/CMakeFiles/rebuild_cache.dir
