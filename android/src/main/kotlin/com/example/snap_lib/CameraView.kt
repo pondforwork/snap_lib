@@ -42,7 +42,7 @@ fun CameraView(
 
                 val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
                 cameraProvider.bindToLifecycle(
-                    lifecycleOwner, // ✅ ใช้ lifecycleOwner ที่รับมา
+                    lifecycleOwner,
                     cameraSelector,
                     preview,
                     imageAnalysis

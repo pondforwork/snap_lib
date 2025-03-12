@@ -34,21 +34,16 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       "processImage" -> {
         imageProcessor.onMethodCall(call, result)
       }
-     "startFrontSnap" -> {
-        // Parameter ที่ Parse เข้ามา
-        val parameter = call.argument<String>("titleMessage")
-        val initialMessage = call.argument<String>("initialMessage")
-        val foundMessage = call.argument<String>("foundMessage")
-        val notFoundMessage = call.argument<String>("notFoundMessage")
-        val snapMode = call.argument<String>("snapMode")
 
-        if (parameter != null && initialMessage !=null && foundMessage !=null && notFoundMessage !=null && snapMode!=null) {
-          startFrontSnap(parameter,initialMessage,foundMessage,notFoundMessage,snapMode)
-          result.success("Parameter received")
-        } else {
-          result.error("INVALID_ARGUMENT", "Parameter is null", null)
+        "startFrontSnap" -> {
+            val titleMessage = call.argument<String>("titleMessage") ?: "Scanning Front Card"
+            val initialMessage = call.argument<String>("initialMessage") ?: "Please position your card"
+            val foundMessage = call.argument<String>("foundMessage") ?: "Card detected"
+            val notFoundMessage = call.argument<String>("notFoundMessage") ?: "No card found"
+            val snapMode = call.argument<String>("snapMode") ?: "front"
+            startSnap(titleMessage, initialMessage, foundMessage, notFoundMessage, snapMode)
+            result.success("Snap Started")
         }
-     }
 
       "openScanFace" -> {
         openScanFace()
@@ -83,17 +78,35 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
   }
 
+    private fun startSnap(titleMessage: String, initialMessage: String, foundMessage: String, notFoundMessage: String, snapMode: String) {
+        val intent = if (snapMode == "front") {
+            Intent(context, ScanFrontCardActivity::class.java)
+        } else {
+            Intent(context, ScanBackCardActivity::class.java)
+        }
 
-  private fun openScanFace() {
-    val intent = Intent(context, ScanFaceActivity::class.java)
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    context.startActivity(intent)
-  }
+        intent.apply {
+            putExtra("titleMessage", titleMessage)
+            putExtra("initialMessage", initialMessage)
+            putExtra("foundMessage", foundMessage)
+            putExtra("notFoundMessage", notFoundMessage)
+            putExtra("snapMode", snapMode)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
+
+    private fun openScanFace() {
+        val intent = Intent(context, ScanFaceActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+        imageProcessor.onDetachedFromEngine(binding)
+    }
 
 
 
-  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    channel.setMethodCallHandler(null)
-    imageProcessor.onDetachedFromEngine(binding)  // ✅ Detach ImageProcessorPlugin
-  }
 }

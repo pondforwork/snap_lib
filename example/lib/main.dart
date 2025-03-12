@@ -33,24 +33,26 @@ class MyApp extends StatelessWidget {
 }
 
 class HomeScreen extends StatelessWidget {
-  // การตั้งค่า หน้า FrontSnap
-  FrontSnapSettings settingsFront = FrontSnapSettings(
-      titleMessage: "สแกนหน้าบัตร",
-      titleFontSize: 10,
-      guideMessageFontSize: 30,
-      initialMessage: "กรุณาวางบัตรในกรอบ",
-      foundMessage: "ถือนิ่งๆ",
-      notFoundMessage: " กรุณาวางบัตรในกรอบ",
-      snapMode: SnapMode.front);
+  // Front & Back Card Scan Settings
+  final FrontSnapSettings settingsFront = FrontSnapSettings(
+    titleMessage: "สแกนหน้าบัตร",
+    titleFontSize: 10,
+    guideMessageFontSize: 30,
+    initialMessage: "กรุณาวางบัตรในกรอบ",
+    foundMessage: "ถือนิ่งๆ",
+    notFoundMessage: " กรุณาวางบัตรในกรอบ",
+    snapMode: SnapMode.front,
+  );
 
-  FrontSnapSettings settingsBack = FrontSnapSettings(
-      titleMessage: "สแกนหลังบัตร",
-      titleFontSize: 17,
-      guideMessageFontSize: 23,
-      initialMessage: "กรุณาวางบัตรในกรอบ",
-      foundMessage: "ถือนิ่งๆ",
-      notFoundMessage: "กรุณาวางบัตรในกรอบ",
-      snapMode: SnapMode.back);
+  final FrontSnapSettings settingsBack = FrontSnapSettings(
+    titleMessage: "สแกนหลังบัตร",
+    titleFontSize: 17,
+    guideMessageFontSize: 23,
+    initialMessage: "กรุณาวางบัตรในกรอบ",
+    foundMessage: "ถือนิ่งๆ",
+    notFoundMessage: "กรุณาวางบัตรในกรอบ",
+    snapMode: SnapMode.back,
+  );
 
   HomeScreen({super.key});
 
@@ -63,7 +65,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           _buildNavButton(context, "Process Image", const ProcessImagePage()),
           _buildNavButton(
-              context, "Process Font Card", const ProcessFontCardPage()),
+              context, "Process Front Card", const ProcessFontCardPage()),
           _buildNavButton(
               context, "Process Back Card", const ProcessBackCardPage()),
           _buildNavButton(
@@ -82,48 +84,39 @@ class HomeScreen extends StatelessWidget {
           _buildNavButton(context, "Reduce Noise", const ReduceNoisePage()),
           _buildNavButton(
               context, "Apply Gamma Correction", const ApplyGammaPage()),
-          //  normal button for openScanFace
-          GestureDetector(
-            onTap: () {
-              SnapLib.openScanFace();
-            },
-            child: Container(
-              height: 50,
-              width: 200,
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Text(
-                  "Open Scan Face",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            ),
-          )
+
+          const SizedBox(height: 10),
+
+          // OpenScanFace Button
+
+          const SizedBox(height: 10),
+
+          // Normal Button for openScanFace
+          _buildCustomButton(
+            title: "Open Scan Face",
+            onTap: () => SnapLib.startFrontSnap(
+                titleMessage: "สแกนหน้า",
+                initialMessage: "กรุณาวางใบหน้าในกรอบ",
+                foundMessage: "ถือนิ่งๆ",
+                notFoundMessage: "กรุณาวางใบหน้าในกรอบ",
+                snapMode: 'front'),
+          ),
         ],
       ),
+
+      // Floating button for capturing front/back card
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // ถ่ายภาพหน้าบัตร
+          // Default to front card scan
           SnapLib.startCardSnap(settingsFront);
-
-          // ถ่ายภาพหลังบัตร
-          // SnapLib.startFrontSnap(settingsBack);
-
-          // การเปลี่ยนจากหน้า เป็นหลัง ให้เปลี่ยนที่ settings ในตัวแปร
-          // snapMode ให้เลือกระหว่าง SnapMode.front หรือ SnapMode.back
-          // Front = สแกนหน้าบัตร , Back = สแกนหลังบัตร
+          // To scan back card, change to settingsBack
         },
-        child: Icon(Icons.camera_alt),
+        child: const Icon(Icons.camera_alt),
       ),
     );
   }
 
+  /// Builds navigation buttons for different processing pages
   Widget _buildNavButton(BuildContext context, String title, Widget page) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -133,6 +126,30 @@ class HomeScreen extends StatelessWidget {
           MaterialPageRoute(builder: (context) => page),
         ),
         child: Text(title),
+      ),
+    );
+  }
+
+  /// Creates a custom button with configurable properties
+  Widget _buildCustomButton(
+      {required String title,
+      required VoidCallback onTap,
+      Color color = Colors.blue}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 50,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: const TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
       ),
     );
   }

@@ -216,11 +216,43 @@ class SnapLib {
     }
   }
 
-  static Future<void> openScanFace() async {
+  static Future<void> startFrontSnap({
+    required String titleMessage,
+    required String initialMessage,
+    required String foundMessage,
+    required String notFoundMessage,
+    required String snapMode,
+  }) async {
     try {
-      await _snapChannel.invokeMethod('openScanFace');
+      await _channel.invokeMethod('startFrontSnap', {
+        "titleMessage": titleMessage,
+        "initialMessage": initialMessage,
+        "foundMessage": foundMessage,
+        "notFoundMessage": notFoundMessage,
+        "snapMode": snapMode,
+      });
     } catch (e) {
-      print("Error opening ScanFaceActivity: $e");
+      print("Error: $e");
     }
+  }
+
+  /// Process an image and convert it to grayscale
+  static Future<String?> convertToGray(String base64Image) async {
+    try {
+      final String? result =
+          await _channel.invokeMethod('convertToGray', {"image": base64Image});
+      return result;
+    } catch (e) {
+      print("Error: $e");
+      return null;
+    }
+  }
+
+  static Future<void> updateGuideText(String text) async {
+    await _snapChannel.invokeMethod('updateGuideText', {'text': text});
+  }
+
+  static Future<void> updateInstructionText(String text) async {
+    await _snapChannel.invokeMethod('updateInstructionText', {'text': text});
   }
 }

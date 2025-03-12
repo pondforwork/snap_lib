@@ -15,7 +15,6 @@ fun CameraScreen() {
     val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Camera preview now receives `lifecycleOwner`
         CameraPreview(modifier = Modifier.fillMaxSize(), lifecycleOwner = lifecycleOwner)
 
         CameraOverlay(
