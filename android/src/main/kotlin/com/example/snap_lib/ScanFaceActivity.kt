@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.graphics.Color
 
-class ScanFaceActivity : AppCompatActivity() {
+class ScanFaceActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,12 +24,7 @@ class ScanFaceActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Black
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Hello World", color = Color.White)
-                    }
+                    CameraScreen()
                 }
             }
         }

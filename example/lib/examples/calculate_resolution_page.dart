@@ -16,15 +16,35 @@ class _CalculateResolutionPageState extends State<CalculateResolutionPage> {
   String? _resolution;
 
   Future<void> _pickImageAndCalculate() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) return;
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
 
-    final imageBytes = await pickedFile.readAsBytes();
-    setState(() => _image = imageBytes);
+      final imageBytes = await pickedFile.readAsBytes();
+      setState(() => _image = imageBytes);
 
-    final resolution = await SnapLib.calculateResolution(imageBytes);
-    setState(() => _resolution = resolution);
+      final resolution = await SnapLib.calculateResolution(imageBytes);
+      setState(() => _resolution = resolution);
+    } catch (e) {
+      _showErrorDialog("Error processing image: ${e.toString()}");
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   @override

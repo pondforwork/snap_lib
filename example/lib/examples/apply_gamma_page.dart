@@ -25,7 +25,7 @@ class _ApplyGammaPageState extends State<ApplyGammaPage> {
       final imageBytes = await pickedFile.readAsBytes();
       setState(() => _originalImage = imageBytes);
 
-      final result = await SnapLib.applyGammaCorrection(imageBytes, 1.5,
+      final result = await SnapLib.applyGammaCorrection(imageBytes, 6.0,
           returnBase64: _returnBase64);
 
       setState(() {
@@ -37,7 +37,24 @@ class _ApplyGammaPageState extends State<ApplyGammaPage> {
       });
     } catch (e) {
       print(e);
+      _showErrorDialog("Error processing image: ${e.toString()}");
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   @override

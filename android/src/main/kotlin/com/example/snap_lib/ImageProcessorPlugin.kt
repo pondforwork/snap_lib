@@ -43,23 +43,24 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     val sigmaColor = call.argument<Double>("sigmaColor") ?: 75.0
                     val sigmaSpace = call.argument<Double>("sigmaSpace") ?: 75.0
                     val sharpenStrength = call.argument<Double>("sharpenStrength") ?: 1.0
-                    val blurKernelWidth = call.argument<Double>("blurKernelWidth") ?: 3.0
-                    val blurKernelHeight = call.argument<Double>("blurKernelHeight") ?: 3.0
+                    val blurKernelSize = call.argument<Double>("blurKernelSize") ?: 3.0
+                    val applyGamma = call.argument<Boolean>("applyGamma") ?: true
+                    val reduceNoise = call.argument<Boolean>("reduceNoise") ?: true
+                    val enhanceSharpen = call.argument<Boolean>("enhanceSharpen") ?: true
                     val returnBase64 = call.argument<Boolean>("returnBase64") ?: true
 
                     if (imageBytes != null) {
                         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                         val mat = bitmapToMat(bitmap)
+
+
                         val processedMat = processImage(
-                            mat, gamma, d, sigmaColor, sigmaSpace, sharpenStrength, blurKernelWidth, blurKernelHeight
+                            mat, gamma, d, sigmaColor, sigmaSpace,
+                            sharpenStrength, blurKernelSize,
+                            applyGamma, reduceNoise, enhanceSharpen
                         )
 
-                        val output = if (returnBase64) {
-                            convertMatToBase64(processedMat)
-                        } else {
-                            convertMatToByteArray(processedMat)
-                        }
-
+                        val output = if (returnBase64) convertMatToBase64(processedMat) else convertMatToByteArray(processedMat)
                         result.success(output)
                     } else {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
@@ -74,32 +75,29 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     val glarePercent = call.argument<Double>("glarePercent") ?: 0.0
                     val resolution = call.argument<String>("resolution") ?: "0x0"
                     val gamma = call.argument<Double>("gamma") ?: 1.0
-                    val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
                     val d = call.argument<Int>("d") ?: 9
                     val sigmaColor = call.argument<Double>("sigmaColor") ?: 75.0
                     val sigmaSpace = call.argument<Double>("sigmaSpace") ?: 75.0
-                    val useSharpening = call.argument<Boolean>("useSharpening") ?: true
                     val sharpenStrength = call.argument<Double>("sharpenStrength") ?: 1.0
-                    val blurKernelWidth = call.argument<Double>("blurKernelWidth") ?: 3.0
-                    val blurKernelHeight = call.argument<Double>("blurKernelHeight") ?: 3.0
+                    val blurKernelSize = call.argument<Double>("blurKernelSize") ?: 3.0
                     val returnBase64 = call.argument<Boolean>("returnBase64") ?: true
+                    val useGammaCorrection = call.argument<Boolean>("useGammaCorrection") ?: true
+                    val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
+                    val useSharpening = call.argument<Boolean>("useSharpening") ?: true
 
                     if (imageBytes != null) {
                         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                         val mat = bitmapToMat(bitmap)
 
                         val processedMat = processImageFontCard(
-                            snr, contrast, brightness, glarePercent, resolution, mat, gamma,
-                            useBilateralFilter, d, sigmaColor, sigmaSpace,
-                            useSharpening, sharpenStrength, blurKernelWidth, blurKernelHeight
+                            snr = snr, contrast = contrast, brightness = brightness, glarePercent = glarePercent,
+                            resolution = resolution, inputMat = mat, gamma = gamma,
+                            d = d, sigmaColor = sigmaColor, sigmaSpace = sigmaSpace,
+                            useSharpening = useSharpening, useBilateralFilter = useBilateralFilter, useGammaCorrection = useGammaCorrection,
+                            sharpenStrength = sharpenStrength, blurKernelSize = blurKernelSize
                         )
 
-                        val output = if (returnBase64) {
-                            convertMatToBase64(processedMat)
-                        } else {
-                            convertMatToByteArray(processedMat)
-                        }
-
+                        val output = if (returnBase64) convertMatToBase64(processedMat) else convertMatToByteArray(processedMat)
                         result.success(output)
                     } else {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
@@ -114,14 +112,13 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     val glarePercent = call.argument<Double>("glarePercent") ?: 0.0
                     val resolution = call.argument<String>("resolution") ?: "0x0"
                     val gamma = call.argument<Double>("gamma") ?: 1.8
-                    val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
                     val d = call.argument<Int>("d") ?: 9
                     val sigmaColor = call.argument<Double>("sigmaColor") ?: 75.0
                     val sigmaSpace = call.argument<Double>("sigmaSpace") ?: 75.0
                     val useSharpening = call.argument<Boolean>("useSharpening") ?: true
+                    val useBilateralFilter = call.argument<Boolean>("useBilateralFilter") ?: true
                     val sharpenStrength = call.argument<Double>("sharpenStrength") ?: 1.0
-                    val blurKernelWidth = call.argument<Double>("blurKernelWidth") ?: 3.0
-                    val blurKernelHeight = call.argument<Double>("blurKernelHeight") ?: 3.0
+                    val blurKernelSize = call.argument<Double>("blurKernelSize") ?: 3.0
                     val returnBase64 = call.argument<Boolean>("returnBase64") ?: true
 
                     if (imageBytes != null) {
@@ -129,17 +126,14 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         val mat = bitmapToMat(bitmap)
 
                         val processedMat = processImageBackCard(
-                            snr, contrast, brightness, glarePercent, resolution, mat, gamma,
-                            useBilateralFilter, d, sigmaColor, sigmaSpace,
-                            useSharpening, sharpenStrength, blurKernelWidth, blurKernelHeight
+                            snr = snr, contrast = contrast, brightness = brightness, glarePercent = glarePercent,
+                            resolution = resolution, inputMat = mat, gamma = gamma,
+                            d = d, sigmaColor = sigmaColor, sigmaSpace = sigmaSpace,
+                            useSharpening = useSharpening, useBilateralFilter = useBilateralFilter,
+                            sharpenStrength = sharpenStrength, blurKernelSize = blurKernelSize
                         )
 
-                        val output = if (returnBase64) {
-                            convertMatToBase64(processedMat)
-                        } else {
-                            convertMatToByteArray(processedMat)
-                        }
-
+                        val output = if (returnBase64) convertMatToBase64(processedMat) else convertMatToByteArray(processedMat)
                         result.success(output)
                     } else {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
@@ -272,7 +266,7 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             require(contrastThreshold > 0) { "contrastThreshold must be greater than 0." }
             require(maxBrightness in 1..255) { "maxBrightness must be between 1 and 255." }
             require(maxGlarePercent in 0.0..100.0) { "maxGlarePercent must be between 0 and 100." }
-
+            require(glarePercent > 0) { "glarePercent must be greater than 0." }
             val (width, height) = resolution.split("x").map { it.toIntOrNull() ?: 0 }
 
             if (width < minResolution || height < minResolution) {
@@ -309,6 +303,7 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         Utils.matToBitmap(mat, bitmap)
         return bitmap
     }
+
     private fun processImage(
         inputMat: Mat,
         gamma: Double = 1.0,
@@ -316,126 +311,111 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         sigmaColor: Double = 75.0,
         sigmaSpace: Double = 75.0,
         sharpenStrength: Double = 1.0,
-        blurKernelWidth: Double = 3.0,
-        blurKernelHeight: Double = 3.0 ,
-
+        blurKernelSize: Double = 3.0,
+        applyGamma: Boolean = true,
+        reduceNoise: Boolean = true,
+        enhanceSharpen: Boolean = true
     ): Mat {
-        println(
-            "Applying preprocessing with parameters: " +
-                    "gamma=$gamma,"+
-                    " d=$d, sigmaColor=$sigmaColor, sigmaSpace=$sigmaSpace, " +
-                    "sharpenStrength=$sharpenStrength, blurKernel=${blurKernelWidth}x$blurKernelHeight"
-        )
+        require(gamma > 0) { "Gamma must be greater than 0." }
+        require(d > 0) { "Bilateral filter parameter d must be greater than 0." }
+        require(sigmaColor > 0) { "sigmaColor must be greater than 0." }
+        require(sigmaSpace > 0) { "sigmaSpace must be greater than 0." }
+        require(sharpenStrength in 0.1..3.0) { "Sharpen strength must be between 0.1 and 3.0." }
+        require(blurKernelSize >= 3.0 && blurKernelSize % 2 == 1.0) { "Blur kernel size must be an odd number and at least 3." }
 
-        // Clone the original Mat to avoid modifying it directly
         var processedMat = inputMat.clone()
 
-        // Ensure the input is in the correct color format
         when (processedMat.type()) {
-            CvType.CV_8UC4 -> {
-                println("Converting from RGBA to BGR")
-                Imgproc.cvtColor(processedMat, processedMat, Imgproc.COLOR_RGBA2BGR)
-            }
-            CvType.CV_8UC1 -> {
-                println("Grayscale image, no need to convert")
-            }
-            else -> {
-                println("Unexpected Mat type: ${processedMat.type()}")
-            }
+            CvType.CV_8UC4 -> Imgproc.cvtColor(processedMat, processedMat, Imgproc.COLOR_RGBA2BGR)
+            CvType.CV_8UC1 -> {}
+            else -> println("⚠️ Unexpected Mat type: ${processedMat.type()}")
         }
 
+        if (applyGamma) processedMat = applyGammaCorrection(processedMat, gamma)
+        if (reduceNoise) processedMat = reduceNoiseWithBilateral(processedMat, d, sigmaColor, sigmaSpace)
+        if (enhanceSharpen) processedMat = enhanceSharpenUnsharpMask(processedMat, sharpenStrength, blurKernelSize)
 
-            processedMat = applyGammaCorrection(processedMat, gamma)
-            processedMat = reduceNoiseWithBilateral(processedMat, d, sigmaColor, sigmaSpace)
-            processedMat = enhanceSharpenUnsharpMask(
-                processedMat, sharpenStrength, Size(blurKernelWidth, blurKernelHeight)
-            )
+        if (processedMat.type() == CvType.CV_8UC3) Imgproc.cvtColor(processedMat, processedMat, Imgproc.COLOR_BGR2RGBA)
 
-
-        // Convert back to RGBA if needed
-        if (processedMat.type() == CvType.CV_8UC3) {
-            println("Converting from BGR to RGBA")
-            Imgproc.cvtColor(processedMat, processedMat, Imgproc.COLOR_BGR2RGBA)
-        }
-
-        println("Preprocessing completed.")
+        println("✅ Preprocessing completed.")
         return processedMat
     }
+
 
     private fun processImageFontCard(
         snr: Double, contrast: Double, brightness: Double, glarePercent: Double, resolution: String,
         inputMat: Mat,
         gamma: Double = 1.0,
-        useBilateralFilter: Boolean = true,
         d: Int = 9,
         sigmaColor: Double = 75.0,
         sigmaSpace: Double = 75.0,
         useSharpening: Boolean = true,
+        useBilateralFilter: Boolean = true,
+        useGammaCorrection: Boolean = true,
         sharpenStrength: Double = 1.0,
-        blurKernelWidth: Double = 3.0,
-        blurKernelHeight: Double = 3.0,
+        blurKernelSize: Double = 3.0,
         minResolution: Int = 500,
         snrThreshold: Double = 3.0,
         contrastThreshold: Double = 50.0,
         maxBrightness: Int = 200,
         maxGlarePercent: Double = 1.0
     ): Mat {
-        println("Processing Font Card - Checking Image Quality (SNR: $snr, Contrast: $contrast, Brightness: $brightness, Glare: $glarePercent, Resolution: $resolution)")
-
-        val isQualityGood = isImageQualityAcceptable(snr, contrast, brightness, glarePercent, resolution, minResolution, snrThreshold, contrastThreshold, maxBrightness, maxGlarePercent)
-
-        val processedMat = if (!isQualityGood) {
-            println("Font Card Image Quality is Low - Applying Preprocessing...")
-            var tempMat = inputMat.clone()
-
-            when (tempMat.type()) {
-                CvType.CV_8UC4 -> Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_RGBA2BGR)
-                CvType.CV_8UC1 -> println("Grayscale image detected, no need for conversion")
-                else -> println("Unexpected Mat type: ${tempMat.type()}")
-            }
-
-            if (gamma != 1.0) tempMat = applyGammaCorrection(tempMat, gamma)
-            if (useBilateralFilter) tempMat = reduceNoiseWithBilateral(tempMat, d, sigmaColor, sigmaSpace)
-            if (useSharpening) tempMat = enhanceSharpenUnsharpMask(tempMat, sharpenStrength, Size(blurKernelWidth, blurKernelHeight))
-
-            if (tempMat.type() == CvType.CV_8UC3) {
-                Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2RGBA)
-            }
-
-            println("Font Card Processing Completed.")
-            tempMat
-        } else {
-            println("Font Card Image Quality is Good - Skipping Processing.")
-            inputMat
-        }
-
-        return processedMat
+        return processImageCard(
+            "Font Card", snr, contrast, brightness, glarePercent, resolution, inputMat,
+            gamma, d, sigmaColor, sigmaSpace, useSharpening, useBilateralFilter, useGammaCorrection,
+            sharpenStrength, blurKernelSize, minResolution, snrThreshold, contrastThreshold, maxBrightness, maxGlarePercent
+        )
     }
 
     private fun processImageBackCard(
         snr: Double, contrast: Double, brightness: Double, glarePercent: Double, resolution: String,
         inputMat: Mat,
         gamma: Double = 1.8,
-        useBilateralFilter: Boolean = true,
         d: Int = 9,
         sigmaColor: Double = 75.0,
         sigmaSpace: Double = 75.0,
         useSharpening: Boolean = true,
+        useBilateralFilter: Boolean = true,
         sharpenStrength: Double = 1.0,
-        blurKernelWidth: Double = 3.0,
-        blurKernelHeight: Double = 3.0,
+        blurKernelSize: Double = 3.0,
         minResolution: Int = 500,
         snrThreshold: Double = 3.0,
         contrastThreshold: Double = 50.0,
         maxBrightness: Int = 200,
         maxGlarePercent: Double = 1.0
     ): Mat {
-        println("Processing Back Card - Checking Image Quality (SNR: $snr, Contrast: $contrast, Brightness: $brightness, Glare: $glarePercent, Resolution: $resolution)")
+        return processImageCard(
+            "Back Card", snr, contrast, brightness, glarePercent, resolution, inputMat,
+            gamma, d, sigmaColor, sigmaSpace, useSharpening, useBilateralFilter, gamma != 1.0,
+            sharpenStrength, blurKernelSize, minResolution, snrThreshold, contrastThreshold, maxBrightness, maxGlarePercent
+        )
+    }
+
+    private fun processImageCard(
+        cardType: String,
+        snr: Double, contrast: Double, brightness: Double, glarePercent: Double, resolution: String,
+        inputMat: Mat,
+        gamma: Double,
+        d: Int,
+        sigmaColor: Double,
+        sigmaSpace: Double,
+        useSharpening: Boolean,
+        useBilateralFilter: Boolean,
+        useGammaCorrection: Boolean,
+        sharpenStrength: Double,
+        blurKernelSize: Double,
+        minResolution: Int,
+        snrThreshold: Double,
+        contrastThreshold: Double,
+        maxBrightness: Int,
+        maxGlarePercent: Double
+    ): Mat {
+        println("Processing $cardType - Checking Image Quality (SNR: $snr, Contrast: $contrast, Brightness: $brightness, Glare: $glarePercent, Resolution: $resolution)")
 
         val isQualityGood = isImageQualityAcceptable(snr, contrast, brightness, glarePercent, resolution, minResolution, snrThreshold, contrastThreshold, maxBrightness, maxGlarePercent)
 
         val processedMat = if (!isQualityGood) {
-            println("Back Card Image Quality is Low - Applying Preprocessing...")
+            println("$cardType Image Quality is Low - Applying Preprocessing...")
             var tempMat = inputMat.clone()
 
             when (tempMat.type()) {
@@ -444,23 +424,24 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 else -> println("Unexpected Mat type: ${tempMat.type()}")
             }
 
-            if (gamma != 1.0) tempMat = applyGammaCorrection(tempMat, gamma)
+            if (useGammaCorrection) tempMat = applyGammaCorrection(tempMat, gamma)
             if (useBilateralFilter) tempMat = reduceNoiseWithBilateral(tempMat, d, sigmaColor, sigmaSpace)
-            if (useSharpening) tempMat = enhanceSharpenUnsharpMask(tempMat, sharpenStrength, Size(blurKernelWidth, blurKernelHeight))
+            if (useSharpening) tempMat = enhanceSharpenUnsharpMask(tempMat, sharpenStrength, blurKernelSize)
 
             if (tempMat.type() == CvType.CV_8UC3) {
                 Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_BGR2RGBA)
             }
 
-            println("Back Card Processing Completed.")
+            println("$cardType Processing Completed.")
             tempMat
         } else {
-            println("Back Card Image Quality is Good - Skipping Processing.")
+            println("$cardType Image Quality is Good - Skipping Processing.")
             inputMat
         }
 
         return processedMat
     }
+
 
 
     private fun convertMatToBase64(mat: Mat): String {
@@ -519,20 +500,22 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     fun enhanceSharpenUnsharpMask(
         mat: Mat,
         strength: Double = 1.0,
-        blurKernel: Size = Size(3.0, 3.0)
+        kernelSize: Double = 3.0  // Single parameter for square kernel
     ): Mat {
         require(strength in 0.1..3.0) { "Sharpening strength must be between 0.1 and 3.0" }
-        require(blurKernel.width >= 3.0 && blurKernel.height >= 3.0) { "Blur kernel size must be at least 3x3" }
+        require(kernelSize >= 3.0 && kernelSize % 2 == 1.0) { "Kernel size must be an odd number and at least 3" }
 
-        println("Applying Unsharp Mask Sharpening with strength=$strength, blurKernel=${blurKernel.width}x${blurKernel.height}")
+        println("Applying Unsharp Mask Sharpening with strength=$strength, kernelSize=${kernelSize}x${kernelSize}")
 
         val blurred = Mat()
+        val blurKernel = Size(kernelSize, kernelSize) // ✅ Ensure square kernel
         Imgproc.GaussianBlur(mat, blurred, blurKernel, 0.0)
 
         val sharpened = Mat()
         Core.addWeighted(mat, 1.0 + strength, blurred, -strength, 0.0, sharpened)
         return sharpened
     }
+
 
     fun calculateContrast(mat: Mat): Double {
         val grayMat = Mat()

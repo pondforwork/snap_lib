@@ -47,6 +47,10 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
           result.error("INVALID_ARGUMENT", "Parameter is null", null)
         }
       }
+      "openScanFace" -> {
+        openScanFace()
+        result.success("ScanFaceActivity started")
+      }
 
       else -> result.notImplemented()
     }
@@ -60,7 +64,11 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(intent)
   }
-
+  private fun openScanFace() {
+    val intent = Intent(context, ScanFaceActivity::class.java)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+  }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)

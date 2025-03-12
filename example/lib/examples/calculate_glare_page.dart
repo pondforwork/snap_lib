@@ -15,15 +15,35 @@ class _CalculateGlarePageState extends State<CalculateGlarePage> {
   double? _glare;
 
   Future<void> _pickImageAndCalculate() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) return;
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
 
-    final imageBytes = await pickedFile.readAsBytes();
-    setState(() => _image = imageBytes);
+      final imageBytes = await pickedFile.readAsBytes();
+      setState(() => _image = imageBytes);
 
-    final glare = await SnapLib.calculateGlare(imageBytes);
-    setState(() => _glare = glare);
+      final glare = await SnapLib.calculateGlare(imageBytes);
+      setState(() => _glare = glare);
+    } catch (e) {
+      _showErrorDialog("Error processing image: ${e.toString()}");
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   @override

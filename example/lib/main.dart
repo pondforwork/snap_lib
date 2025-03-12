@@ -70,6 +70,29 @@ class HomeScreen extends StatelessWidget {
           _buildNavButton(context, "Reduce Noise", const ReduceNoisePage()),
           _buildNavButton(
               context, "Apply Gamma Correction", const ApplyGammaPage()),
+          //  normal button for openScanFace
+          GestureDetector(
+            onTap: () {
+              SnapLib.openScanFace();
+            },
+            child: Container(
+              height: 50,
+              width: 200,
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(
+                  "Open Scan Face",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ),
+          )
         ],
       ),
       floatingActionButton: FloatingActionButton(onPressed: () {

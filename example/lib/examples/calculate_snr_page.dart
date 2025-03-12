@@ -15,15 +15,35 @@ class _CalculateSNRPageState extends State<CalculateSNRPage> {
   double? _snr;
 
   Future<void> _pickImageAndCalculate() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) return;
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
 
-    final imageBytes = await pickedFile.readAsBytes();
-    setState(() => _image = imageBytes);
+      final imageBytes = await pickedFile.readAsBytes();
+      setState(() => _image = imageBytes);
 
-    final snr = await SnapLib.calculateSNR(imageBytes);
-    setState(() => _snr = snr);
+      final snr = await SnapLib.calculateSNR(imageBytes);
+      setState(() => _snr = snr);
+    } catch (e) {
+      _showErrorDialog("Error processing image: ${e.toString()}");
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   @override

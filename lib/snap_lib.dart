@@ -6,15 +6,16 @@ class SnapLib {
   static const MethodChannel _channel = MethodChannel('image_processor_plugin');
   static const MethodChannel _snapChannel = MethodChannel('snap_plugin');
 
-  /// **Process Image (General)**
   static Future<dynamic> processImage(Uint8List imageBytes,
       {double gamma = 1.0,
       int d = 9,
       double sigmaColor = 75.0,
       double sigmaSpace = 75.0,
       double sharpenStrength = 1.0,
-      double blurKernelWidth = 3.0,
-      double blurKernelHeight = 3.0,
+      double blurKernelSize = 3.0,
+      bool applyGamma = true,
+      bool reduceNoise = true,
+      bool enhanceSharpen = true,
       bool returnBase64 = true}) async {
     return await _channel.invokeMethod('processImage', {
       'image': imageBytes,
@@ -23,13 +24,14 @@ class SnapLib {
       'sigmaColor': sigmaColor,
       'sigmaSpace': sigmaSpace,
       'sharpenStrength': sharpenStrength,
-      'blurKernelWidth': blurKernelWidth,
-      'blurKernelHeight': blurKernelHeight,
+      'blurKernelSize': blurKernelSize,
+      'applyGamma': applyGamma,
+      'reduceNoise': reduceNoise,
+      'enhanceSharpen': enhanceSharpen,
       'returnBase64': returnBase64,
     });
   }
 
-  /// **Process Front Card**
   static Future<dynamic> processFontCard(Uint8List imageBytes,
       {double snr = 0.0,
       double contrast = 0.0,
@@ -43,8 +45,7 @@ class SnapLib {
       double sigmaSpace = 75.0,
       bool useSharpening = true,
       double sharpenStrength = 1.0,
-      double blurKernelWidth = 3.0,
-      double blurKernelHeight = 3.0,
+      double blurKernelSize = 3.0,
       bool returnBase64 = true}) async {
     return await _channel.invokeMethod('processFontCard', {
       'image': imageBytes,
@@ -60,13 +61,11 @@ class SnapLib {
       'sigmaSpace': sigmaSpace,
       'useSharpening': useSharpening,
       'sharpenStrength': sharpenStrength,
-      'blurKernelWidth': blurKernelWidth,
-      'blurKernelHeight': blurKernelHeight,
+      'blurKernelSize': blurKernelSize,
       'returnBase64': returnBase64,
     });
   }
 
-  /// **Process Back Card**
   static Future<dynamic> processBackCard(Uint8List imageBytes,
       {double snr = 0.0,
       double contrast = 0.0,
@@ -80,8 +79,7 @@ class SnapLib {
       double sigmaSpace = 75.0,
       bool useSharpening = true,
       double sharpenStrength = 1.0,
-      double blurKernelWidth = 3.0,
-      double blurKernelHeight = 3.0,
+      double blurKernelSize = 3.0,
       bool returnBase64 = true}) async {
     return await _channel.invokeMethod('processBackCard', {
       'image': imageBytes,
@@ -97,19 +95,16 @@ class SnapLib {
       'sigmaSpace': sigmaSpace,
       'useSharpening': useSharpening,
       'sharpenStrength': sharpenStrength,
-      'blurKernelWidth': blurKernelWidth,
-      'blurKernelHeight': blurKernelHeight,
+      'blurKernelSize': blurKernelSize,
       'returnBase64': returnBase64,
     });
   }
 
-  /// **Calculate Brightness**
   static Future<double?> calculateBrightness(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('calculateBrightness', {'image': imageBytes});
   }
 
-  /// **Calculate Glare**
   static Future<double?> calculateGlare(Uint8List imageBytes,
       {double threshold = 230.0, double minGlareArea = 500.0}) async {
     return await _channel.invokeMethod('calculateGlare', {
@@ -119,7 +114,6 @@ class SnapLib {
     });
   }
 
-  /// **Calculate SNR**
   static Future<double?> calculateSNR(Uint8List imageBytes) async {
     return await _channel.invokeMethod('calculateSNR', {'image': imageBytes});
   }
@@ -130,13 +124,40 @@ class SnapLib {
         .invokeMethod('calculateContrast', {'image': imageBytes});
   }
 
+  static Future<bool> isImageQualityAcceptable(
+    Uint8List imageBytes, {
+    double snr = 0.0,
+    double contrast = 0.0,
+    double brightness = 0.0,
+    double glarePercent = 0.0,
+    String resolution = "0x0",
+    int minResolution = 500,
+    double snrThreshold = 3.0,
+    double contrastThreshold = 50.0,
+    int maxBrightness = 200,
+    double maxGlarePercent = 1.0,
+  }) async {
+    return await _channel.invokeMethod('isImageQualityAcceptable', {
+      'image': imageBytes,
+      'snr': snr,
+      'contrast': contrast,
+      'brightness': brightness,
+      'glarePercent': glarePercent,
+      'resolution': resolution,
+      'minResolution': minResolution,
+      'snrThreshold': snrThreshold,
+      'contrastThreshold': contrastThreshold,
+      'maxBrightness': maxBrightness,
+      'maxGlarePercent': maxGlarePercent,
+    });
+  }
+
   /// **Calculate Resolution**
   static Future<String?> calculateResolution(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('calculateResolution', {'image': imageBytes});
   }
 
-  /// **Apply Gamma Correction**
   static Future<dynamic> applyGammaCorrection(
       Uint8List imageBytes, double gamma,
       {bool returnBase64 = true}) async {
@@ -147,7 +168,6 @@ class SnapLib {
     });
   }
 
-  /// **Reduce Noise**
   static Future<dynamic> reduceNoise(Uint8List imageBytes,
       {int d = 9,
       double sigmaColor = 75.0,
@@ -162,22 +182,18 @@ class SnapLib {
     });
   }
 
-  /// **Enhance Sharpen**
   static Future<dynamic> enhanceSharpen(Uint8List imageBytes,
       {double strength = 1.5,
-      double blurKernelWidth = 5.0,
-      double blurKernelHeight = 5.0,
+      double blurKernelSize = 5.0,
       bool returnBase64 = true}) async {
     return await _channel.invokeMethod('enhanceSharpen', {
       'image': imageBytes,
       'strength': strength,
-      'blurKernelWidth': blurKernelWidth,
-      'blurKernelHeight': blurKernelHeight,
+      'blurKernelSize': blurKernelSize,
       'returnBase64': returnBase64,
     });
   }
 
-  /// **Convert Mat to Base64**
   static Future<String?> convertMatToBase64(Uint8List imageBytes) async {
     return await _channel
         .invokeMethod('convertMatToBase64', {'image': imageBytes});
@@ -191,5 +207,13 @@ class SnapLib {
       'foundMessage': frontSnapSettings.foundMessage,
       'notFoundMessage': frontSnapSettings.notFoundMessage
     });
+  }
+
+  static Future<void> openScanFace() async {
+    try {
+      await _snapChannel.invokeMethod('openScanFace');
+    } catch (e) {
+      print("Error opening ScanFaceActivity: $e");
+    }
   }
 }

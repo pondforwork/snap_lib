@@ -16,15 +16,35 @@ class _CalculateBrightnessPageState extends State<CalculateBrightnessPage> {
   double? _brightness;
 
   Future<void> _pickImageAndCalculate() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) return;
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
 
-    final imageBytes = await pickedFile.readAsBytes();
-    setState(() => _image = imageBytes);
+      final imageBytes = await pickedFile.readAsBytes();
+      setState(() => _image = imageBytes);
 
-    final brightness = await SnapLib.calculateBrightness(imageBytes);
-    setState(() => _brightness = brightness);
+      final brightness = await SnapLib.calculateBrightness(imageBytes);
+      setState(() => _brightness = brightness);
+    } catch (e) {
+      _showErrorDialog("Error processing image: ${e.toString()}");
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   @override
