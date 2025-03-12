@@ -109,7 +109,7 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     val snr = call.argument<Double>("snr") ?: 0.0
                     val contrast = call.argument<Double>("contrast") ?: 0.0
                     val brightness = call.argument<Double>("brightness") ?: 0.0
-                    val glarePercent = call.argument<Double>("glarePercent") ?: 0.0
+                    val glarePercent = call.argument<Double>("glarePercent") ?: 1.0
                     val resolution = call.argument<String>("resolution") ?: "0x0"
                     val gamma = call.argument<Double>("gamma") ?: 1.8
                     val d = call.argument<Int>("d") ?: 9
@@ -235,6 +235,43 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                             convertMatToByteArray(processedMat)
                         }
 
+                        result.success(output)
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
+                    }
+                }
+                "enhanceSharpen" -> {
+                    val imageBytes = call.argument<ByteArray>("image")
+                    val strength = call.argument<Double>("strength") ?: 1.5
+                    val kernelSize = call.argument<Double>("kernelSize") ?: 3.0
+                    val returnBase64 = call.argument<Boolean>("returnBase64") ?: true
+
+                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val mat = bitmapToMat(bitmap)
+
+                        val processedMat = enhanceSharpenUnsharpMask(mat, strength, kernelSize)
+
+                        val output = if (returnBase64) convertMatToBase64(processedMat) else convertMatToByteArray(processedMat)
+                        result.success(output)
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
+                    }
+                }
+                "reduceNoise" -> {
+                    val imageBytes = call.argument<ByteArray>("image")
+                    val d = call.argument<Int>("d") ?: 9
+                    val sigmaColor = call.argument<Double>("sigmaColor") ?: 75.0
+                    val sigmaSpace = call.argument<Double>("sigmaSpace") ?: 75.0
+                    val returnBase64 = call.argument<Boolean>("returnBase64") ?: true
+
+                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val mat = bitmapToMat(bitmap)
+
+                        val processedMat = reduceNoiseWithBilateral(mat, d, sigmaColor, sigmaSpace)
+
+                        val output = if (returnBase64) convertMatToBase64(processedMat) else convertMatToByteArray(processedMat)
                         result.success(output)
                     } else {
                         result.error("INVALID_ARGUMENT", "Missing or invalid image data", null)
@@ -488,11 +525,17 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         require(d >= 1) { "d (diameter) must be at least 1" }
         require(sigmaColor >= 10) { "sigmaColor must be at least 10" }
         require(sigmaSpace >= 10) { "sigmaSpace must be at least 10" }
+        val tempMat = mat.clone()
 
+        when (tempMat.type()) {
+            CvType.CV_8UC4 -> Imgproc.cvtColor(tempMat, tempMat, Imgproc.COLOR_RGBA2BGR)
+            CvType.CV_8UC1 -> println("Grayscale image detected, no need for conversion")
+            else -> println("Unexpected Mat type: ${tempMat.type()}")
+        }
         println("Applying Bilateral Filter with d=$d, sigmaColor=$sigmaColor, sigmaSpace=$sigmaSpace")
 
         val output = Mat()
-        Imgproc.bilateralFilter(mat, output, d, sigmaColor, sigmaSpace)
+        Imgproc.bilateralFilter(tempMat, output, d, sigmaColor, sigmaSpace)
         return output
     }
 

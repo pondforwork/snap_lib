@@ -24,6 +24,7 @@ class _ProcessBackCardPageState extends State<ProcessBackCardPage> {
   double _sigmaSpace = 75.0;
   double _sharpenStrength = 1.0;
   double _blurKernelSize = 3.0;
+  double _g = 1.0;
 
   Future<void> _pickAndProcessImage() async {
     final pickedFile =
@@ -34,19 +35,18 @@ class _ProcessBackCardPageState extends State<ProcessBackCardPage> {
     setState(() => _originalImage = imageBytes);
     final resolutionImage = await SnapLib.calculateResolution(imageBytes);
 
-    final result = await SnapLib.processBackCard(
-      imageBytes,
-      resolution: resolutionImage!,
-      gamma: _gamma,
-      useBilateralFilter: _useBilateralFilter,
-      d: _d,
-      sigmaColor: _sigmaColor,
-      sigmaSpace: _sigmaSpace,
-      useSharpening: _useSharpening,
-      sharpenStrength: _sharpenStrength,
-      blurKernelSize: _blurKernelSize,
-      returnBase64: _returnBase64,
-    );
+    final result = await SnapLib.processBackCard(imageBytes,
+        resolution: resolutionImage!,
+        gamma: _gamma,
+        useBilateralFilter: _useBilateralFilter,
+        d: _d,
+        sigmaColor: _sigmaColor,
+        sigmaSpace: _sigmaSpace,
+        useSharpening: _useSharpening,
+        sharpenStrength: _sharpenStrength,
+        blurKernelSize: _blurKernelSize,
+        returnBase64: _returnBase64,
+        glarePercent: _g);
 
     setState(() {
       if (_returnBase64) {
