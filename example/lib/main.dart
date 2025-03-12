@@ -34,11 +34,22 @@ class MyApp extends StatelessWidget {
 
 class HomeScreen extends StatelessWidget {
   // การตั้งค่า หน้า FrontSnap
-  FrontSnapSettings settings = FrontSnapSettings(
-      titleMessage: "สแกนffหน้าบัตร",
+  FrontSnapSettings settingsFront = FrontSnapSettings(
+      titleMessage: "สแกนหน้าบัตร",
+      titleFontSize: 10,
+      guideMessageFontSize: 30,
       initialMessage: "กรุณาวางบัตรในกรอบ",
       foundMessage: "ถือนิ่งๆ",
-      notFoundMessage: " วางบัตรในกรอบหน่อย",
+      notFoundMessage: " กรุณาวางบัตรในกรอบ",
+      snapMode: SnapMode.front);
+
+  FrontSnapSettings settingsBack = FrontSnapSettings(
+      titleMessage: "สแกนหลังบัตร",
+      titleFontSize: 17,
+      guideMessageFontSize: 23,
+      initialMessage: "กรุณาวางบัตรในกรอบ",
+      foundMessage: "ถือนิ่งๆ",
+      notFoundMessage: "กรุณาวางบัตรในกรอบ",
       snapMode: SnapMode.back);
 
   HomeScreen({super.key});
@@ -96,9 +107,20 @@ class HomeScreen extends StatelessWidget {
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        SnapLib.startFrontSnap(settings);
-      }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // ถ่ายภาพหน้าบัตร
+          SnapLib.startCardSnap(settingsFront);
+
+          // ถ่ายภาพหลังบัตร
+          // SnapLib.startFrontSnap(settingsBack);
+
+          // การเปลี่ยนจากหน้า เป็นหลัง ให้เปลี่ยนที่ settings ในตัวแปร
+          // snapMode ให้เลือกระหว่าง SnapMode.front หรือ SnapMode.back
+          // Front = สแกนหน้าบัตร , Back = สแกนหลังบัตร
+        },
+        child: Icon(Icons.camera_alt),
+      ),
     );
   }
 

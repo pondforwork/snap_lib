@@ -17,7 +17,7 @@ class MethodChannelSnapLib extends SnapLibPlatform {
   }
 
   @override
-  Future<String?> startFrontSnap() async {
+  Future<String?> startCardSnap() async {
     await methodChannel.invokeMethod<void>('startFrontSnap');
     return null;
   }

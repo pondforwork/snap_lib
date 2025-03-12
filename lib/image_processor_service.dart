@@ -21,7 +21,7 @@ class ImageProcessorPlugin {
         'convertMatToFile', {'image': imageBytes, 'filePath': filePath});
   }
 
-  static Future<String?> startFrontSnap() async {
+  static Future<String?> startCardSnap() async {
     return await _channel.invokeMethod('startFrontSnap');
   }
 }

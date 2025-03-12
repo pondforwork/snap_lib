@@ -198,10 +198,12 @@ class SnapLib {
         .invokeMethod('convertMatToBase64', {'image': imageBytes});
   }
 
-  static Future<String?> startFrontSnap(
+  static Future<String?> startCardSnap(
       FrontSnapSettings frontSnapSettings) async {
     var result = await _snapChannel.invokeMethod('startFrontSnap', {
       'titleMessage': frontSnapSettings.titleMessage,
+      'titleFontSize': frontSnapSettings.titleFontSize,
+      'guideMessageFontSize': frontSnapSettings.guideMessageFontSize,
       'initialMessage': frontSnapSettings.initialMessage,
       'foundMessage': frontSnapSettings.foundMessage,
       'notFoundMessage': frontSnapSettings.notFoundMessage,

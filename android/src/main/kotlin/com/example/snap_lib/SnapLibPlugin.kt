@@ -59,12 +59,12 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       else -> result.notImplemented()
     }
   }
-  
-  private fun startFrontSnap(parameter1: String , initialMessage: String , foundMessage: String, notFoundMessage: String, snapMode : String) {
+
+  private fun startFrontSnap(titleMessage: String , initialMessage: String , foundMessage: String, notFoundMessage: String, snapMode : String) {
 
     if(snapMode == "front"){
       val intent = Intent(context, ScanFrontCardActivity::class.java)
-      intent.putExtra("titleMessage", parameter1)
+      intent.putExtra("titleMessage", titleMessage)
       intent.putExtra("initialMessage", initialMessage)
       intent.putExtra("foundMessage", foundMessage)
       intent.putExtra("notFoundMessage", notFoundMessage)
@@ -73,7 +73,7 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       context.startActivity(intent)
     } else {
       val intent = Intent(context, ScanBackCardActivity::class.java)
-      intent.putExtra("titleMessage", parameter1)
+      intent.putExtra("titleMessage", titleMessage)
       intent.putExtra("initialMessage", initialMessage)
       intent.putExtra("foundMessage", foundMessage)
       intent.putExtra("notFoundMessage", notFoundMessage)

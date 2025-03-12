@@ -129,6 +129,8 @@ class ScanFrontCardActivity : AppCompatActivity() {
 
     // การปรับแต่งข้อความและตำแหน่งข้อความ
     private var titleMessage = "ถ่ายภาพหน้าบัตร"
+    private var titleFontSize = 20
+    private var guideMessageFontSize = 20
     private var initialGuideText = "กรุณาวางบัตรในกรอบ"
     private var foundMessage = "พบบัตร"
     private var notFoundMessage = "ไม่พบบัตร"
@@ -144,6 +146,8 @@ class ScanFrontCardActivity : AppCompatActivity() {
 
         // Get the parameter from the intent
         titleMessage = intent.getStringExtra("titleMessage") ?: "ถ่ายภาพหน้าบัตร"
+        titleFontSize = intent.getStringExtra("titleFontSize")?.toIntOrNull() ?: 20
+        guideMessageFontSize = intent.getStringExtra("guideMessageFontSize")?.toIntOrNull() ?: 20
         initialGuideText = intent.getStringExtra("initialMessage") ?: "กรุณาวางบัตรในกรอบ"
         foundMessage = intent.getStringExtra("foundMessage") ?: "พบบัตร ถือค้างไว้"
         notFoundMessage = intent.getStringExtra("notFoundMessage") ?: "ไม่พบบัตร"
@@ -180,7 +184,7 @@ class ScanFrontCardActivity : AppCompatActivity() {
  //                                fontFamily = fontKanit,
                                  text = titleMessage,
                                  color = Color.White,
-                                 style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                                 style = TextStyle(fontSize = titleFontSize.sp, fontWeight = FontWeight.Bold),
                                  textAlign = TextAlign.Center,
                                  modifier = Modifier
                                      .padding(top = 16.dp)
@@ -286,7 +290,7 @@ class ScanFrontCardActivity : AppCompatActivity() {
 //                fontFamily = fontKanit,
                 text = cameraViewModel.guideText,
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = guideMessageFontSize.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
