@@ -35,10 +35,11 @@ class MyApp extends StatelessWidget {
 class HomeScreen extends StatelessWidget {
   // การตั้งค่า หน้า FrontSnap
   FrontSnapSettings settings = FrontSnapSettings(
-      titleMessage: "ถ่ายภาพหน้าบัตร sfdsfsd",
+      titleMessage: "สแกนffหน้าบัตร",
       initialMessage: "กรุณาวางบัตรในกรอบ",
-      foundMessage: "พบบัตร ถือนิ่งๆ",
-      notFoundMessage: " วางบัตรในกรอบหน่อย");
+      foundMessage: "ถือนิ่งๆ",
+      notFoundMessage: " วางบัตรในกรอบหน่อย",
+      snapMode: SnapMode.back);
 
   HomeScreen({super.key});
 
