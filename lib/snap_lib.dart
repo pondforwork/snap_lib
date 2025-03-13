@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:snap_lib/settings/ImageProcessingSettings.dart';
 import 'package:snap_lib/settings/WarningMessages.dart';
+import 'package:snap_lib/settings/card_process_setting.dart';
 import 'package:snap_lib/settings/dialog_setting.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
 
@@ -35,73 +36,14 @@ class SnapLib {
     });
   }
 
-  static Future<dynamic> processFontCard(Uint8List imageBytes,
-      {double snr = 0.0,
-      double contrast = 0.0,
-      double brightness = 0.0,
-      double glarePercent = 0.0,
-      String resolution = "0x0",
-      double gamma = 1.0,
-      bool applyGamma = true,
-      bool reduceNoise = true,
-      bool enhanceSharpen = true,
-      int d = 9,
-      double sigmaColor = 75.0,
-      double sigmaSpace = 75.0,
-      double sharpenStrength = 1.0,
-      double blurKernelSize = 3.0,
-      bool returnBase64 = true}) async {
-    return await _channel.invokeMethod('processFontCard', {
-      'image': imageBytes,
-      'snr': snr,
-      'contrast': contrast,
-      'brightness': brightness,
-      'glarePercent': glarePercent,
-      'resolution': resolution,
-      'gamma': gamma,
-      'useBilateralFilter': applyGamma,
-      'd': d,
-      'sigmaColor': sigmaColor,
-      'sigmaSpace': sigmaSpace,
-      'useSharpening': enhanceSharpen,
-      'sharpenStrength': sharpenStrength,
-      'blurKernelSize': blurKernelSize,
-      'returnBase64': returnBase64,
-    });
+  static Future<dynamic> processFontCard(
+      CardProcessingSettings settings) async {
+    return await _channel.invokeMethod('processFontCard', settings.toMap());
   }
 
-  static Future<dynamic> processBackCard(Uint8List imageBytes,
-      {double snr = 0.0,
-      double contrast = 0.0,
-      double brightness = 0.0,
-      double glarePercent = 0.0,
-      String resolution = "0x0",
-      double gamma = 1.8,
-      bool useBilateralFilter = true,
-      int d = 9,
-      double sigmaColor = 75.0,
-      double sigmaSpace = 75.0,
-      bool useSharpening = true,
-      double sharpenStrength = 1.0,
-      double blurKernelSize = 3.0,
-      bool returnBase64 = true}) async {
-    return await _channel.invokeMethod('processBackCard', {
-      'image': imageBytes,
-      'snr': snr,
-      'contrast': contrast,
-      'brightness': brightness,
-      'glarePercent': glarePercent,
-      'resolution': resolution,
-      'gamma': gamma,
-      'useBilateralFilter': useBilateralFilter,
-      'd': d,
-      'sigmaColor': sigmaColor,
-      'sigmaSpace': sigmaSpace,
-      'useSharpening': useSharpening,
-      'sharpenStrength': sharpenStrength,
-      'blurKernelSize': blurKernelSize,
-      'returnBase64': returnBase64,
-    });
+  static Future<dynamic> processBackCard(
+      CardProcessingSettings settings) async {
+    return await _channel.invokeMethod('processBackCard', settings.toMap());
   }
 
   static Future<double?> calculateBrightness(Uint8List imageBytes) async {
