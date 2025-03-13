@@ -100,31 +100,12 @@ class ScanFaceActivity : ComponentActivity() {
             guideFontSize = intent.getFloatExtra("guideFontSize", 22f),
             instructionFontSize = intent.getFloatExtra("instructionFontSize", 18f),
             guideTextColor = intent.getIntExtra("guideTextColor", 0xFFFFFF00.toInt()),
-            instructionTextColor = intent.getIntExtra("instructionTextColor", 0x00FFFF.toInt())
+            instructionTextColor = intent.getIntExtra("instructionTextColor", 0x00FFFF.toInt()),
+            borderWidth = intent.getIntExtra("borderWidth", 0xFFFFFFFF.toInt()),
         )
 
-        methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "snap_plugin")
-        methodChannel.setMethodCallHandler { call, result ->
-            when (call.method) {
-                "updateOverlaySettings" -> {
-                    overlaySettings = OverlaySettings(
-                        guideText = call.argument<String>("guideText") ?: overlaySettings.guideText,
-                        instructionText = call.argument<String>("instructionText") ?: overlaySettings.instructionText,
-                        successText = call.argument<String>("successText") ?: overlaySettings.successText,
-                        borderColorSuccess = call.argument<Int>("borderColorSuccess") ?: overlaySettings.borderColorSuccess,
-                        borderColorDefault = call.argument<Int>("borderColorDefault") ?: overlaySettings.borderColorDefault,
-                        textColorDefault = call.argument<Int>("textColorDefault") ?: overlaySettings.textColorDefault,
-                        textColorSuccess = call.argument<Int>("textColorSuccess") ?: overlaySettings.textColorSuccess,
-                        guideFontSize = call.argument<Float>("guideFontSize") ?: overlaySettings.guideFontSize,
-                        instructionFontSize = call.argument<Float>("instructionFontSize") ?: overlaySettings.instructionFontSize,
-                        guideTextColor = call.argument<Int>("guideTextColor") ?: overlaySettings.guideTextColor,
-                        instructionTextColor = call.argument<Int>("instructionTextColor") ?: overlaySettings.instructionTextColor
-                    )
-                    result.success("Overlay settings updated")
-                }
-                else -> result.notImplemented()
-            }
-        }
+
+
     }
 
     fun processImageWithTFLite(context: Context, bitmap: Bitmap): Int {
@@ -249,19 +230,7 @@ class ScanFaceActivity : ComponentActivity() {
             AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
 
             CameraOverlay(
-                guideText = overlaySettings.guideText,
-                instructionText = overlaySettings.instructionText,
-                successText = "ถือค้างไว้", // Face found success text
-                borderColorSuccess = Color.Green,
-                borderColorDefault = Color.Red,
-                textColorDefault = Color.White,
-                textColorSuccess = Color.Green,
-                guideTextStyle = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Yellow),
-                instructionTextStyle = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color.Cyan),
-                guideTextAlignment = Alignment.TopCenter,
-                instructionTextAlignment = Alignment.BottomCenter,
-                paddingTop = 24.dp,
-                paddingBottom = 24.dp
+                overlaySettings = overlaySettings
             )
 
             if (startCaptureAnimation) {
@@ -311,6 +280,7 @@ class ScanFaceActivity : ComponentActivity() {
         var instructionFontSize: Float,
         var guideTextColor: Int,
         var instructionTextColor: Int,
+        var borderWidth: Int,
         var guideTextPosition: String = "Top", // "Top", "Center", "Bottom"
         var instructionTextPosition: String = "Bottom" // "Top", "Center", "Bottom"
     )
@@ -321,31 +291,47 @@ class ScanFaceActivity : ComponentActivity() {
         val byteArray = byteArrayOutputStream.toByteArray()
         return android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT)
     }
-
     @Composable
     fun CameraOverlay(
+        modifier: Modifier = Modifier,
         overlaySettings: OverlaySettings
     ) {
+        val guideText = overlaySettings.guideText.ifEmpty { "ให้ใบหน้าอยู่ในกรอบที่กำหนด" }
+        val instructionText = overlaySettings.instructionText.ifEmpty { "ไม่มีปิดตา จมูก ปาก และคาง" }
+        val successText = overlaySettings.successText.ifEmpty { "ถือค้างไว้" }
+
+        val borderColorSuccess = Color(overlaySettings.borderColorSuccess.takeIf { it != 0 } ?: Color.Green.toArgb())
+        val borderColorDefault = Color(overlaySettings.borderColorDefault.takeIf { it != 0 } ?: Color.Red.toArgb())
+
+        val textColorDefault = Color(overlaySettings.textColorDefault.takeIf { it != 0 } ?: Color.White.toArgb())
+        val textColorSuccess = Color(overlaySettings.textColorSuccess.takeIf { it != 0 } ?: Color.Green.toArgb())
+
+        val guideFontSize = overlaySettings.guideFontSize.takeIf { it > 0 } ?: 22f
+        val instructionFontSize = overlaySettings.instructionFontSize.takeIf { it > 0 } ?: 18f
+
+        val guideTextColor = Color(overlaySettings.guideTextColor.takeIf { it != 0 } ?: Color.Yellow.toArgb())
+        val instructionTextColor = Color(overlaySettings.instructionTextColor.takeIf { it != 0 } ?: Color.Cyan.toArgb())
+
+        val borderWidth = overlaySettings.guideFontSize.takeIf { it > 0 } ?: 22f
+
+        val guideTextAlignment = when (overlaySettings.guideTextPosition) {
+            "Center" -> Alignment.Center
+            "Bottom" -> Alignment.BottomCenter
+            else -> Alignment.TopCenter
+        }
+
+        val instructionTextAlignment = when (overlaySettings.instructionTextPosition) {
+            "Top" -> Alignment.TopCenter
+            "Center" -> Alignment.Center
+            else -> Alignment.BottomCenter
+        }
+
         val borderColor by animateColorAsState(
-            targetValue = if (overlaySettings.guideText == "ถือค้างไว้")
-                Color(overlaySettings.borderColorSuccess)
-            else
-                Color(overlaySettings.borderColorDefault),
+            targetValue = if (guideText == successText) borderColorSuccess else borderColorDefault,
             animationSpec = tween(durationMillis = 500)
         )
 
-        val textColor by animateColorAsState(
-            targetValue = if (overlaySettings.guideText == "ถือค้างไว้")
-                Color(overlaySettings.textColorSuccess)
-            else
-                Color(overlaySettings.textColorDefault),
-            animationSpec = tween(durationMillis = 500)
-        )
-
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val screenWidth = size.width
                 val screenHeight = size.height
@@ -355,19 +341,23 @@ class ScanFaceActivity : ComponentActivity() {
                 val ovalLeft = (screenWidth - ovalWidth) / 2
                 val ovalTop = (screenHeight - ovalHeight) / 2
 
-                // Background with transparent oval
+                // Dark background
                 drawRect(color = Color.Black.copy(alpha = 0.6f), size = size)
+
+                // Transparent oval
                 drawOval(
                     color = Color.Transparent,
                     topLeft = Offset(ovalLeft, ovalTop),
                     size = Size(ovalWidth, ovalHeight),
                     blendMode = BlendMode.Clear
                 )
+
+                // Border
                 drawOval(
                     color = borderColor,
                     topLeft = Offset(ovalLeft, ovalTop),
                     size = Size(ovalWidth, ovalHeight),
-                    style = Stroke(width = 8.dp.toPx())
+                    style = Stroke(width = borderWidth)
                 )
             }
 
@@ -376,49 +366,34 @@ class ScanFaceActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // ✅ Guide Text Position (User-defined)
-                if (overlaySettings.guideTextPosition == "Top") {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                    contentAlignment = guideTextAlignment
+                ) {
                     Text(
-                        text = overlaySettings.guideText,
-                        fontSize = overlaySettings.guideFontSize.sp,
+                        text = guideText,
+                        fontSize = guideFontSize.sp,
                         fontWeight = FontWeight.Bold,
-                        color = textColor,
-                        modifier = Modifier.padding(top = 32.dp)
+                        color = guideTextColor
                     )
-                } else if (overlaySettings.guideTextPosition == "Center") {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = overlaySettings.guideText,
-                        fontSize = overlaySettings.guideFontSize.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
                 }
 
-                // ✅ Instruction Text Position (User-defined)
-                if (overlaySettings.instructionTextPosition == "Bottom") {
+                Spacer(modifier = Modifier.weight(1f))
+
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    contentAlignment = instructionTextAlignment
+                ) {
                     Text(
-                        text = overlaySettings.instructionText,
-                        fontSize = overlaySettings.instructionFontSize.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color(overlaySettings.instructionTextColor),
-                        modifier = Modifier.padding(bottom = 32.dp)
+                        text = instructionText,
+                        fontSize = instructionFontSize.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = instructionTextColor
                     )
-                } else if (overlaySettings.instructionTextPosition == "Center") {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = overlaySettings.instructionText,
-                        fontSize = overlaySettings.instructionFontSize.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color(overlaySettings.instructionTextColor)
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
     }
-
 
 
 
