@@ -69,7 +69,7 @@ class ScanFaceActivity : ComponentActivity() {
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
             if (isGranted) {
-                setCameraContent() 
+                setCameraContent()
             } else {
                 Log.e("CameraX", "Camera permission denied")
             }
@@ -130,7 +130,7 @@ class ScanFaceActivity : ComponentActivity() {
     fun processImageWithTFLite(context: Context, bitmap: Bitmap): Int {
         val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.FLOAT32)
 
-        val byteBuffer = convertBitmapToByteBuffer(bitmap) 
+        val byteBuffer = convertBitmapToByteBuffer(bitmap)
         inputFeature0.loadBuffer(byteBuffer)
 
         val outputs = model.process(inputFeature0)
@@ -139,6 +139,7 @@ class ScanFaceActivity : ComponentActivity() {
 
         // หา Class ที่มีความเป็นไปได้สูงสุด
         val detectedClass = probabilities.indices.maxByOrNull { probabilities[it] } ?: -1
+        Log.e("detectedClass",detectedClass.toString())
 
         return detectedClass
     }
@@ -151,7 +152,9 @@ class ScanFaceActivity : ComponentActivity() {
         var showDialog by remember { mutableStateOf(false) }
         var capturedBitmap by remember { mutableStateOf<Bitmap?>(null) }
         var classTwoDetectedTime by remember { mutableStateOf<Long?>(null) }
-        var isCapturing by remember { mutableStateOf(true) } // ✅ Control camera capturing
+        var isCapturing by remember { mutableStateOf(true) }
+        var startCaptureAnimation by remember { mutableStateOf(false) }
+        var captureProgress by remember { mutableStateOf(1f) }
 
         val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
         val executor = ContextCompat.getMainExecutor(context)
@@ -172,41 +175,52 @@ class ScanFaceActivity : ComponentActivity() {
         }
 
         imageAnalyzer.setAnalyzer(executor) { imageProxy ->
-            if (!isCapturing) { // ✅ Skip processing if capturing is paused
+            if (!isCapturing) {
                 imageProxy.close()
                 return@setAnalyzer
             }
 
             val bitmap = imageProxy.toBitmap()
-
             val rotatedBitmap = rotateBitmap(bitmap, -90f)
-
             val detectedClass = processImageWithTFLite(context, rotatedBitmap)
 
-            // ถ้าเป็น Class 0 (หน้าคน) ให้จับเวลา
             if (detectedClass == 0) {
                 val currentTime = System.currentTimeMillis()
                 overlaySettings.guideText = "ถือค้างไว้"
-                // ✅ Start counting if class 2 is detected
+
                 if (classTwoDetectedTime == null) {
                     classTwoDetectedTime = currentTime
+                    startCaptureAnimation = true // ✅ Start animation
                 }
-                // ✅ If class 2 has been detected for 2 seconds, capture image
-                if (classTwoDetectedTime != null && currentTime - classTwoDetectedTime!! >= 2000) {
+
+                if (classTwoDetectedTime != null && currentTime - classTwoDetectedTime!! >= 1500) {
                     capturedBitmap = rotatedBitmap
                     showDialog = true
-                    isCapturing = false // ✅ Stop capturing
-                    classTwoDetectedTime = null // Reset timer
+                    isCapturing = false
+                    classTwoDetectedTime = null
+                    startCaptureAnimation = false // ✅ Stop animation after capture
                 }
             } else {
                 overlaySettings.guideText = "วางหน้า"
-
-                classTwoDetectedTime = null // Reset timer if class changes
+                classTwoDetectedTime = null
+                startCaptureAnimation = false // ✅ Stop animation if face is lost
             }
 
             detectedFace = (detectedClass == 1)
             imageProxy.close()
         }
+
+        LaunchedEffect(startCaptureAnimation) {
+            if (startCaptureAnimation) {
+                var progress = 1f
+                while (progress >= 0f) {
+                    captureProgress = progress
+                    progress -= 0.05f
+                    kotlinx.coroutines.delay(100)
+                }
+            }
+        }
+
 
         LaunchedEffect(Unit) {
             try {
@@ -235,27 +249,39 @@ class ScanFaceActivity : ComponentActivity() {
             AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
 
             CameraOverlay(
-                guideText = if (detectedFace) settings.successText else settings.guideText,
-                instructionText = settings.instructionText
+                guideText = overlaySettings.guideText,
+                instructionText = overlaySettings.instructionText,
+                borderColorSuccess = Color.Green,
+                borderColorDefault = Color.Red
             )
-        }
 
-        // ✅ Show Dialog when class 2 is detected for 2 seconds
-        if (showDialog && capturedBitmap != null) {
-            CapturedImageDialog(
-                bitmap = capturedBitmap!!,
-                onRetake = {
-                    showDialog = false
-                    isCapturing = true // ✅ Resume capturing
-                },
-                onConfirm = {
-                    showDialog = false
-                    val base64Image = convertBitmapToBase64(capturedBitmap!!)
-                    (context as ScanFaceActivity).sendImageToFlutter(base64Image) // ✅ Send image to Flutter
-                }
-            )
+            if (startCaptureAnimation) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 1f - captureProgress))
+                )
+            }
+
+            if (showDialog && capturedBitmap != null) {
+                CapturedImageDialog(
+                    bitmap = capturedBitmap!!,
+                    onRetake = {
+                        showDialog = false
+                        isCapturing = true
+                        overlaySettings.guideText = "วางหน้า"
+                        startCaptureAnimation = false // ✅ Reset animation
+                    },
+                    onConfirm = {
+                        showDialog = false
+                        val base64Image = convertBitmapToBase64(capturedBitmap!!)
+                        (context as ScanFaceActivity).sendImageToFlutter(base64Image)
+                    }
+                )
+            }
         }
     }
+
 
     private fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Float): Bitmap {
         val matrix = Matrix()
@@ -289,6 +315,8 @@ class ScanFaceActivity : ComponentActivity() {
     fun CameraOverlay(
         guideText: String,
         instructionText: String,
+        guideTextColor: Color = Color(overlaySettings.guideTextColor),
+        instructionTextColor: Color = Color(overlaySettings.instructionTextColor),
         borderColorSuccess: Color = Color(overlaySettings.borderColorSuccess),
         borderColorDefault: Color = Color(overlaySettings.borderColorDefault),
         borderWidth: Dp = 8.dp
@@ -298,9 +326,14 @@ class ScanFaceActivity : ComponentActivity() {
             animationSpec = tween(durationMillis = 500)
         )
 
+        val textColor by animateColorAsState(
+            targetValue = if (guideText == "ถือค้างไว้") borderColorSuccess else Color.White,
+            animationSpec = tween(durationMillis = 500)
+        )
+
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center 
+            contentAlignment = Alignment.Center
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val screenWidth = size.width
@@ -311,6 +344,7 @@ class ScanFaceActivity : ComponentActivity() {
                 val ovalLeft = (screenWidth - ovalWidth) / 2
                 val ovalTop = (screenHeight - ovalHeight) / 2
 
+                // Background with transparent oval
                 drawRect(color = Color.Black.copy(alpha = 0.6f), size = size)
                 drawOval(color = Color.Transparent, topLeft = Offset(ovalLeft, ovalTop), size = Size(ovalWidth, ovalHeight), blendMode = BlendMode.Clear)
                 drawOval(color = borderColor, topLeft = Offset(ovalLeft, ovalTop), size = Size(ovalWidth, ovalHeight), style = Stroke(width = borderWidth.toPx()))
@@ -318,28 +352,32 @@ class ScanFaceActivity : ComponentActivity() {
 
             Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween, 
+                verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // **✅ Guide Text (Top)**
+                // ✅ Guide Text (Top)
                 Text(
-                    // กำหนดตาม Overlay
                     text = guideText,
-                    style = TextStyle(fontSize = overlaySettings.guideFontSize.sp, fontWeight = FontWeight.Bold, color = Color(overlaySettings.guideTextColor)),
+                    fontSize = overlaySettings.guideFontSize.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor,
                     modifier = Modifier.padding(top = 32.dp)
                 )
 
-                Spacer(modifier = Modifier.weight(1f)) // **Push instruction text down**
+                Spacer(modifier = Modifier.weight(1f)) // Push instruction text down
 
-                // **✅ Instruction Text (Bottom)**
+                // ✅ Instruction Text (Bottom)
                 Text(
                     text = instructionText,
-                    style = TextStyle(fontSize = overlaySettings.instructionFontSize.sp, fontWeight = FontWeight.Normal, color = Color(overlaySettings.instructionTextColor)),
+                    fontSize = overlaySettings.instructionFontSize.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = instructionTextColor,
                     modifier = Modifier.padding(bottom = 32.dp)
                 )
             }
         }
     }
+
 
     fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
         val width = 224

@@ -34,7 +34,7 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "startBackSnap" -> {
                 handleSnap(call, result, "back")
             }
-            "startCameraOverlay" -> {
+            "startFaceSnap" -> {
                 startCameraOverlay(call, result)
             }
             else -> result.notImplemented()

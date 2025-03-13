@@ -167,7 +167,7 @@ class SnapLib {
     required String snapMode,
   }) async {
     try {
-      await _channel.invokeMethod('startFaceSnap', {
+      await _snapChannel.invokeMethod('startFaceSnap', {
         "titleMessage": titleMessage,
         "initialMessage": initialMessage,
         "foundMessage": foundMessage,
