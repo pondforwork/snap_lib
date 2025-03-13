@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:snap_lib/settings/DialogStyleSettings.dart';
 import 'package:snap_lib/settings/ImageProcessingSettings.dart';
 import 'package:snap_lib/settings/WarningMessages.dart';
+import 'package:snap_lib/settings/dialog_setting.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
 import 'package:snap_lib/snap_lib.dart';
 import 'package:snap_lib_example/examples/apply_gamma_page.dart';
@@ -136,7 +136,7 @@ class HomeScreen extends StatelessWidget {
                 warningGlare: "⚠️ ลดแสงสะท้อน",
               ),
               DialogStyleSettings(
-                backgroundColor: 0xFF000000, // Black
+                backgroundColor: 0xFFFFFFFF, // Black
                 titleColor: 0xFFFFFF00, // Yellow
                 subtitleColor: 0xFFFFFFFF, // White
                 buttonConfirmColor: 0xFF00FF00, // Green

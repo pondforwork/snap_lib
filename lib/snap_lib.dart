@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
-import 'package:snap_lib/settings/DialogStyleSettings.dart';
 import 'package:snap_lib/settings/ImageProcessingSettings.dart';
 import 'package:snap_lib/settings/WarningMessages.dart';
+import 'package:snap_lib/settings/dialog_setting.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
 
 class SnapLib {

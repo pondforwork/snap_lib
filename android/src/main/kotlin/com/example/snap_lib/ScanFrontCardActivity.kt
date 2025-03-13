@@ -614,19 +614,19 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
 
                         // ✅ Check conditions and append warnings
                         if (isDetectNoise && noiseLevel > maxNoiseValue) {
-                            detectedWarnings += "$warningNoise\n"
+                            detectedWarnings = "$warningNoise\n"
                             Log.d("Warning", "Noise Too High: $noiseLevel (Max: $maxNoiseValue)")
                         }
                         if (isDetectBrightness && brightness > maxBrightnessValue) {
-                            detectedWarnings += "$warningBrightnessOver\n"
+                            detectedWarnings = "$warningBrightnessOver\n"
                             Log.d("Warning", "Brightness Too High: $brightness (Max: $maxBrightnessValue)")
                         }
                         if (isDetectGlare && (glare * 100) > maxGlarePercent) {
-                            detectedWarnings += "$warningGlare\n"
+                            detectedWarnings = "$warningGlare\n"
                             Log.d("Warning", "Glare Too High: $glare% (Max: $maxGlarePercent%)")
                         }
                         if (isDetectBrightness && brightness < minBrightnessValue) {
-                            detectedWarnings += "$warningBrightnessLower\n"
+                            detectedWarnings = "$warningBrightnessLower\n"
                             Log.d("Warning", "Brightness Too Low: $brightness (Min: $minBrightnessValue)")
                         }
 
