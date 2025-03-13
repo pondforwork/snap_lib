@@ -494,7 +494,7 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 
-    private fun calculateBrightness(mat: Mat): Double {
+     fun calculateBrightness(mat: Mat): Double {
         // Convert to grayscale for brightness analysis
         val grayMat = Mat()
         Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_BGR2GRAY)
@@ -603,7 +603,7 @@ class ImageProcessorPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     fun calculateResolution(mat: Mat): String {
         return "${mat.cols()}x${mat.rows()}"
     }
-    private fun calculateGlare(mat: Mat, threshold: Double = 230.0, minGlareArea: Double = 500.0): Double {
+     fun calculateGlare(mat: Mat, threshold: Double = 230.0, minGlareArea: Double = 500.0): Double {
         require(threshold in 200.0..255.0) { "Threshold must be between 200 and 255" }
         require(minGlareArea >= 100) { "minGlareArea must be at least 100 to avoid noise" }
 

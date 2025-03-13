@@ -126,7 +126,21 @@ class ScanFrontCardActivity : AppCompatActivity() {
     private var pathFinal = ""
     private val cameraViewModel: CameraViewModel by viewModels()
     private val rectPositionViewModel: RectPositionViewModel by viewModels()
-
+//processinf image validatetion
+private var isDetectNoise = true
+    private var isDetectBrightness = true
+    private var isDetectGlare = true
+//value
+    private var maxNoiseValue = 3.0
+    private var maxBrightnessValue = 200.0
+    private var minBrightnessValue = 80.0
+    private var maxGlarePercent = 1.0
+//    waringing text
+private var warningMessage = "กรุณาให้บัตรอยู่ในแสงที่เพียงพอ"
+    private var warningNoise = "กรุณาเหลียกเหลี่ยงที่มืดเนี่ยงจากมีสัญญาณรบกวน"
+    private var warningBrightnessOver = "กรุณาอยุ่ในที่แสงเหมาะสม"
+    private var warningBrightnessLower= "กรุณาหาแสง"
+    private var warningGlare = "กรุณาหลีกเลี่ยงแสงสะท้อน"
     // การปรับแต่งข้อความและตำแหน่งข้อความ
     private var titleMessage = "ถ่ายภาพหน้าบัตร"
     private var titleFontSize = 20
@@ -152,6 +166,22 @@ class ScanFrontCardActivity : AppCompatActivity() {
         foundMessage = intent.getStringExtra("foundMessage") ?: "พบบัตร ถือค้างไว้"
         notFoundMessage = intent.getStringExtra("notFoundMessage") ?: "ไม่พบบัตร"
         snapMode = intent.getStringExtra("snapMode") ?: "front"
+//valiable from user setting
+        isDetectNoise = intent.getBooleanExtra("isDetectNoise", true)
+        isDetectBrightness = intent.getBooleanExtra("isDetectBrightness", true)
+        isDetectGlare = intent.getBooleanExtra("isDetectGlare", true)
+
+        maxNoiseValue = intent.getDoubleExtra("maxNoiseValue", 3.0)
+        maxBrightnessValue = intent.getDoubleExtra("maxBrightnessValue", 200.0)
+        minBrightnessValue = intent.getDoubleExtra("minBrightnessValue", 80.0)
+        maxGlarePercent = intent.getDoubleExtra("maxGlarePercent", 1.0)
+//      waringin text
+        warningMessage = intent.getStringExtra("warningMessage") ?: "กรุณาปรับแสงให้เหมาะสม"
+
+        warningNoise = intent.getStringExtra("warningNoise") ?: "🔹 ลด Noise ในภาพ"
+        warningBrightnessOver = intent.getStringExtra("warningBrightnessOver") ?: "🔹 ลดความสว่าง"
+        warningGlare = intent.getStringExtra("warningGlare") ?: "🔹 ลดแสงสะท้อน"
+        warningBrightnessLower = intent.getStringExtra("warningBrightnessLower") ?: "🔹 เพิ่มความสว่าง"
 
         // สร้างตัวแปร Model Front ที่นี่
         model = ModelFrontNew.newInstance(this)
@@ -204,20 +234,7 @@ class ScanFrontCardActivity : AppCompatActivity() {
             }
         }
 
-        // Initialize ImageProcessorPlugin
-        // Example call to a method from ImageProcessorPlugin
-        // val exampleBitmap: Bitmap = // ... obtain a Bitmap ...
-        // val processedMat = imageProcessorPlugin.processImage(
-        //     inputMat = imageProcessorPlugin.bitmapToMat(exampleBitmap),
-        //     gamma = 1.0,
-        //     d = 9,
-        //     sigmaColor = 75.0,
-        //     sigmaSpace = 75.0,
-        //     sharpenStrength = 1.0,
-        //     blurKernelWidth = 3.0,
-        //     blurKernelHeight = 3.0
-        // )
-        // ... use processedMat ...
+
     }
 
     @Composable
@@ -226,21 +243,7 @@ class ScanFrontCardActivity : AppCompatActivity() {
         cameraViewModel: CameraViewModel,
         rectPositionViewModel: RectPositionViewModel
     ) {
-        // Animation states
-//        val selectedSize = remember { mutableStateOf(0.8f) } // Default rectangle size
-//        val animatedRectWidth = animateFloatAsState(
-//            targetValue = selectedSize.value,
-//            animationSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
-//        )
 
-//        val pulseScale = rememberInfiniteTransition().animateFloat(
-//            initialValue = 1f,
-//            targetValue = 1.1f,
-//            animationSpec = infiniteRepeatable(
-//                animation = tween(1000, easing = FastOutSlowInEasing),
-//                repeatMode = RepeatMode.Reverse
-//            )
-//        )
 
         Box(
             modifier = modifier
@@ -306,6 +309,7 @@ class ScanFrontCardActivity : AppCompatActivity() {
         var isShutter by remember { mutableStateOf(false) }
         var showDialog by remember { mutableStateOf(false) }
 
+
         val context = LocalContext.current
         val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -369,9 +373,6 @@ class ScanFrontCardActivity : AppCompatActivity() {
                                     var sharPestImage = findSharpestImage()
                                     println("Sharpest Image Index is: ${sharPestImage.first}, Variance: ${sharPestImage.second}")
 
-                                    // บันทึก Index ของภาพที่ชัดที่สุด ไว้ในตัวแปร
-//                                    sharPestImageIndex = sharPestImage.first!!
-
                                     // เสร็จแล้วแสดงภาพที่ชัดที่สุดออกมา
                                     showDialog = true
                                     isShutter = false
@@ -393,11 +394,8 @@ class ScanFrontCardActivity : AppCompatActivity() {
                             }
                         }
                         else if(!isShutter){
-                            // ถ้ามีการสั่งให้จำแนก Class
                             if(isPredicting){
-                                // ประมวลภาพถ้ามีการสั่งให้ Predict
                                 processImageProxy(imageProxy)
-                                // ถ้าเจอ เริ่มจับเวลา
                                 if(isFound){
                                     if (!isTiming){
                                         isTiming = true
@@ -517,6 +515,10 @@ class ScanFrontCardActivity : AppCompatActivity() {
                 val rotatedBitmap = rotateBitmap(bitmap, 90f)
 
                 val outputBuffer = predictClasss(rotatedBitmap)
+//                processing condition
+                val noiseLevel = imageProcessorPlugin.calculateSNR(mat)
+                val brightness = imageProcessorPlugin.calculateBrightness(mat)
+                val glare = imageProcessorPlugin.calculateGlare(mat)
 
                 // ถ้าได้ Output ของการ Predict ออกมา
                 if (outputBuffer != null) {
@@ -530,9 +532,27 @@ class ScanFrontCardActivity : AppCompatActivity() {
                     Log.d("NewActivity", "maxIndex: $maxIndex")
                     // ถ้าเป็น Class 0
                     // 0 คือ บัตรประชาชน
+                    var detectedWarnings = ""
                     if (maxIndex == 0 ){
-                        cameraViewModel.updateGuideText(foundMessage)
-                        isFound = true
+                        // condition for processing
+                        if (isDetectNoise && noiseLevel > maxNoiseValue) {
+                            detectedWarnings += warningNoise
+                        }
+                        if (isDetectBrightness && brightness > maxBrightnessValue) {
+                            detectedWarnings += warningBrightnessOver
+                        }
+                        if (isDetectGlare && glare > maxGlarePercent) {
+                            detectedWarnings += warningGlare
+                        }
+                        if(isDetectBrightness && brightness < minBrightnessValue){
+                            detectedWarnings += warningBrightnessLower
+                        }
+
+                        if (detectedWarnings.isNotEmpty()) {
+                            cameraViewModel.updateGuideText("$warningMessage:$detectedWarnings")
+                            isFound = false
+                        }
+
                     }else{
                         isFound = false
                         cameraViewModel.updateGuideText(notFoundMessage)

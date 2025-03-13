@@ -41,12 +41,26 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
     }
 
-    /** Handles starting the Snap Activity */
     private fun handleSnap(call: MethodCall, result: MethodChannel.Result, snapMode: String) {
         val titleMessage = call.argument<String>("titleMessage") ?: "Scanning ${snapMode.capitalize()} Card"
         val initialMessage = call.argument<String>("initialMessage") ?: "Please position your card"
         val foundMessage = call.argument<String>("foundMessage") ?: "Card detected"
         val notFoundMessage = call.argument<String>("notFoundMessage") ?: "No card found"
+
+        val isDetectNoise = call.argument<Boolean>("isDetectNoise") ?: true
+        val isDetectBrightness = call.argument<Boolean>("isDetectBrightness") ?: true
+        val isDetectGlare = call.argument<Boolean>("isDetectGlare") ?: true
+
+        val maxNoiseValue = call.argument<Double>("maxNoiseValue") ?: 3.0
+        val maxBrightnessValue = call.argument<Double>("maxBrightnessValue") ?: 200.0
+        val minBrightnessValue = call.argument<Double>("minBrightnessValue") ?: 80.0
+        val maxGlarePercent = call.argument<Double>("maxGlarePercent") ?: 1.0
+
+        val warningMessage = call.argument<String>("warningMessage") ?: "กรุณาปรับแสงให้เหมาะสม"
+        val warningNoise = call.argument<String>("warningNoise") ?: "🔹 ลด Noise ในภาพ"
+        val warningBrightnessOver = call.argument<String>("warningBrightnessOver") ?: "🔹 ลดความสว่าง"
+        val warningBrightnessLower = call.argument<String>("warningBrightnessLower") ?: "🔹 เพิ่มความสว่าง"
+        val warningGlare = call.argument<String>("warningGlare") ?: "🔹 ลดแสงสะท้อน"
 
         val intent = if (snapMode == "front") {
             Intent(context, ScanFrontCardActivity::class.java)
@@ -60,6 +74,24 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             putExtra("foundMessage", foundMessage)
             putExtra("notFoundMessage", notFoundMessage)
             putExtra("snapMode", snapMode)
+
+            // ✅ ส่งค่าการตั้งค่าตรวจจับ
+            putExtra("isDetectNoise", isDetectNoise)
+            putExtra("isDetectBrightness", isDetectBrightness)
+            putExtra("isDetectGlare", isDetectGlare)
+
+            putExtra("maxNoiseValue", maxNoiseValue)
+            putExtra("maxBrightnessValue", maxBrightnessValue)
+            putExtra("minBrightnessValue", minBrightnessValue)
+            putExtra("maxGlarePercent", maxGlarePercent)
+
+            // ✅ ส่งค่าข้อความแจ้งเตือนที่กำหนดเอง
+            putExtra("warningMessage", warningMessage)
+            putExtra("warningNoise", warningNoise)
+            putExtra("warningBrightnessOver", warningBrightnessOver)
+            putExtra("warningBrightnessLower", warningBrightnessLower)
+            putExtra("warningGlare", warningGlare)
+
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
 
@@ -67,7 +99,6 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         result.success("Snap Started for $snapMode card")
     }
 
-    /** Handles starting the Camera Overlay */
     private fun startCameraOverlay(call: MethodCall, result: MethodChannel.Result) {
         val intent = Intent(context, ScanFaceActivity::class.java).apply {
             putExtra("guideText", call.argument<String>("guideText") ?: "ให้ใบหน้าอยู่ในกรอบที่กำหนด")
