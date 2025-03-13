@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
+import 'package:snap_lib/settings/DialogStyleSettings.dart';
 import 'package:snap_lib/settings/ImageProcessingSettings.dart';
 import 'package:snap_lib/settings/WarningMessages.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
@@ -204,11 +205,13 @@ class SnapLib {
     FrontSnapSettings frontSnapSettings,
     ImageProcessingSettings processingSettings,
     WarningMessages warningMessages,
+    DialogStyleSettings dialogSettings, // ✅ Added dialog settings
   ) async {
     var result = await _snapChannel.invokeMethod('startFrontSnap', {
       ...frontSnapSettings.toMap(),
       ...processingSettings.toMap(),
       ...warningMessages.toMap(),
+      ...dialogSettings.toMap(), // ✅ Added dialog settings
     });
 
     return result?.toString();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snap_lib/settings/DialogStyleSettings.dart';
 import 'package:snap_lib/settings/ImageProcessingSettings.dart';
 import 'package:snap_lib/settings/WarningMessages.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
@@ -111,30 +112,39 @@ class HomeScreen extends StatelessWidget {
         onPressed: () {
           // Default to front card scan
           SnapLib.startCardSnap(
-            FrontSnapSettings(
-              titleMessage: "ถ่ายภาพหน้าบัตร",
-              initialMessage: "กรุณาวางบัตรในกรอบ",
-              foundMessage: "พบบัตร ถือค้างไว้",
-              notFoundMessage: "ไม่พบบัตร",
-              snapMode: SnapMode.front,
-            ),
-            ImageProcessingSettings(
-              isDetectNoise: true,
-              isDetectBrightness: true,
-              isDetectGlare: true,
-              maxNoiseValue: 3.5,
-              maxBrightnessValue: 130.0,
-              minBrightnessValue: 90.0,
-              maxGlarePercent: 1.0,
-            ),
-            WarningMessages(
-              warningMessage: "⚠️ กรุณาปรับแสงให้เหมาะสม",
-              warningNoise: "⚠️ โปรดลด Noise",
-              warningBrightnessOver: "⚠️ แสงจ้าเกินไป",
-              warningBrightnessLower: "⚠️ แสงน้อยเกินไป",
-              warningGlare: "⚠️ ลดแสงสะท้อน",
-            ),
-          );
+              FrontSnapSettings(
+                titleMessage: "สแกนหน้าบัตร",
+                initialMessage: "กรุณาวางบัตรในกรอบ",
+                foundMessage: "พบบัตร ถือค้างไว้",
+                notFoundMessage: "ไม่พบบัตร",
+                snapMode: SnapMode.front,
+              ),
+              ImageProcessingSettings(
+                isDetectNoise: true,
+                isDetectBrightness: true,
+                isDetectGlare: true,
+                maxNoiseValue: 3.5,
+                maxBrightnessValue: 130.0,
+                minBrightnessValue: 90.0,
+                maxGlarePercent: 1.0,
+              ),
+              WarningMessages(
+                warningMessage: "⚠️ กรุณาปรับแสงให้เหมาะสม",
+                warningNoise: "⚠️ โปรดลด Noise",
+                warningBrightnessOver: "⚠️ แสงจ้าเกินไป",
+                warningBrightnessLower: "⚠️ แสงน้อยเกินไป",
+                warningGlare: "⚠️ ลดแสงสะท้อน",
+              ),
+              DialogStyleSettings(
+                backgroundColor: 0xFF000000, // Black
+                titleColor: 0xFFFFFF00, // Yellow
+                subtitleColor: 0xFFFFFFFF, // White
+                buttonConfirmColor: 0xFF00FF00, // Green
+                buttonRetakeColor: 0xFFFF0000, // Red
+                buttonTextColor: 0xFF000000, // Black
+                extraMessage: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
+                extraMessageColor: 0xFFFFA500, // Orange
+              ));
           // To scan back card, change to settingsBack
         },
         child: const Icon(Icons.camera_alt),

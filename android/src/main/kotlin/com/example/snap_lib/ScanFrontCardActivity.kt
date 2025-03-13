@@ -157,7 +157,6 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
     data class DialogSettings(
         val dialogBackgroundColor: Int = 0xFFFFFFFF.toInt(),
         val dialogTitleColor: Int = 0xFF2D3892.toInt(),
-        val dialogSubtitleColor: Int = 0xFF888888.toInt(),
         val dialogButtonConfirmColor: Int = 0xFF2D3892.toInt(),
         val dialogButtonRetakeColor: Int = 0xFFFFFFFF.toInt(),
         val dialogButtonTextColor: Int = 0xFF000000.toInt(),
@@ -165,9 +164,6 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
         val dialogTitle: String = "ยืนยันข้อมูล",
         val dialogTitleFontSize: Int = 22,
         val dialogTitleAlignment: String = "center",
-        val dialogSubtitle: String = "กรุณาตรวจสอบความชัดเจนของภาพบัตร",
-        val dialogSubtitleFontSize: Int = 14,
-        val dialogSubtitleAlignment: String = "center",
         val dialogExtraMessage: String = "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
         val dialogExtraMessageColor: Int = 0xFF000000.toInt(),
         val dialogExtraMessageFontSize: Int = 14,
@@ -215,7 +211,6 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
         dialogSettings = DialogSettings(
             dialogBackgroundColor = intent.getIntExtra("dialogBackgroundColor", 0xFFFFFFFF.toInt()),
             dialogTitleColor = intent.getIntExtra("dialogTitleColor", 0xFF2D3892.toInt()),
-            dialogSubtitleColor = intent.getIntExtra("dialogSubtitleColor", 0xFF888888.toInt()),
             dialogButtonConfirmColor = intent.getIntExtra("dialogButtonConfirmColor", 0xFF2D3892.toInt()),
             dialogButtonRetakeColor = intent.getIntExtra("dialogButtonRetakeColor", 0xFFFFFFFF.toInt()),
             dialogButtonTextColor = intent.getIntExtra("dialogButtonTextColor", 0xFF000000.toInt()),
@@ -223,9 +218,6 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
             dialogTitle = intent.getStringExtra("dialogTitle") ?: "ยืนยันข้อมูล",
             dialogTitleFontSize = intent.getIntExtra("dialogTitleFontSize", 22),
             dialogTitleAlignment = intent.getStringExtra("dialogTitleAlignment") ?: "center",
-            dialogSubtitle = intent.getStringExtra("dialogSubtitle") ?: "กรุณาตรวจสอบความชัดเจนของภาพบัตร",
-            dialogSubtitleFontSize = intent.getIntExtra("dialogSubtitleFontSize", 14),
-            dialogSubtitleAlignment = intent.getStringExtra("dialogSubtitleAlignment") ?: "center",
             dialogExtraMessage = intent.getStringExtra("dialogExtraMessage") ?: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
             dialogExtraMessageColor = intent.getIntExtra("dialogExtraMessageColor", 0xFF000000.toInt()),
             dialogExtraMessageFontSize = intent.getIntExtra("dialogExtraMessageFontSize", 14),
@@ -505,10 +497,6 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                 // ✅ Apply dialog settings dynamically
                 dialogBackgroundColor = Color(dialogSettings.dialogBackgroundColor),
                 dialogTitleColor = Color(dialogSettings.dialogTitleColor),
-                dialogSubtitleColor = Color(dialogSettings.dialogSubtitleColor),
-                dialogButtonConfirmColor = Color(dialogSettings.dialogButtonConfirmColor),
-                dialogButtonRetakeColor = Color(dialogSettings.dialogButtonRetakeColor),
-                dialogButtonTextColor = Color(dialogSettings.dialogButtonTextColor),
                 dialogAlignment = when (dialogSettings.dialogAlignment) {
                     "top" -> Alignment.TopCenter
                     "bottom" -> Alignment.BottomCenter
@@ -524,13 +512,7 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                     else -> TextAlign.Center
                 },
 
-                subtitle = dialogSettings.dialogSubtitle,
-                subtitleFontSize = dialogSettings.dialogSubtitleFontSize,
-                subtitleAlignment = when (dialogSettings.dialogSubtitleAlignment) {
-                    "left" -> TextAlign.Left
-                    "right" -> TextAlign.Right
-                    else -> TextAlign.Center
-                },
+
 
                 // ✅ Apply extra message settings
                 extraMessage = dialogSettings.dialogExtraMessage,
@@ -773,35 +755,48 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
         onRetake: () -> Unit,
         onConfirm: () -> Unit,
 
-        // ✅ Customizable UI properties
-        dialogBackgroundColor: Color,
-        dialogTitleColor: Color,
-        dialogSubtitleColor: Color,
-        dialogButtonConfirmColor: Color,
-        dialogButtonRetakeColor: Color,
-        dialogButtonTextColor: Color,
-        dialogAlignment: Alignment,
+        // ✅ Dialog Customization
+        dialogBackgroundColor: Color = Color.White,
+        dialogTitleColor: Color = Color(0xFF2D3892),
+        dialogSubtitleColor: Color = Color.Gray,
+        dialogAlignment: Alignment = Alignment.Center,
 
-        title: String,
-        titleFontSize: Int,
-        titleAlignment: TextAlign,
+        // ✅ Title Customization
+        title: String = "ยืนยันข้อมูล",
+        titleFontSize: Int = 22,
+        titleAlignment: TextAlign = TextAlign.Center,
 
-        subtitle: String,
-        subtitleFontSize: Int,
-        subtitleAlignment: TextAlign,
 
-        extraMessage: String,
-        extraMessageColor: Color,
-        extraMessageFontSize: Int,
-        extraMessageAlignment: TextAlign,
+        // ✅ Extra Message Customization
+        extraMessage: String = "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
+        extraMessageColor: Color = Color.Red,
+        extraMessageFontSize: Int = 14,
+        extraMessageAlignment: TextAlign = TextAlign.Center,
 
-        borderRadius: Dp,
-        buttonHeight: Dp
+        // ✅ Dialog Shape & Buttons
+        borderRadius: Dp = 16.dp,
+        buttonHeight: Dp = 48.dp,
+
+        // ✅ Retake Button Customization (ถ่ายใหม่)
+        retakeButtonText: String = "ถ่ายใหม่",
+        retakeButtonTextColor: Color = Color.Black,
+        retakeButtonBackgroundColor: Color = Color.White,
+        retakeButtonBorderColor: Color = Color.Gray,
+        retakeButtonBorderWidth: Dp = 2.dp,
+
+        // ✅ Confirm Button Customization (ยืนยัน)
+        confirmButtonText: String = "ยืนยัน",
+        confirmButtonTextColor: Color = Color.White,
+        confirmButtonBackgroundColor: Color = Color(0xFF2D3892),
+        confirmButtonBorderColor: Color = Color(0xFF2D3892),
+        confirmButtonBorderWidth: Dp = 2.dp
     ) {
-        Dialog(onDismissRequest = { }) {
+        Dialog(onDismissRequest = { /* Prevent dismiss by clicking outside */ }) {
             Box(
-                modifier = Modifier.fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.8f))
+                modifier = Modifier
+                    .fillMaxSize()
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.8f)) // ✅ Dim background
                     .padding(8.dp),
                 contentAlignment = dialogAlignment
             ) {
@@ -811,18 +806,94 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                     shadowElevation = 12.dp
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = title, color = dialogTitleColor, fontSize = titleFontSize.sp, textAlign = titleAlignment)
-                        Text(text = subtitle, color = dialogSubtitleColor, fontSize = subtitleFontSize.sp, textAlign = subtitleAlignment)
-                        Text(text = extraMessage, color = extraMessageColor, fontSize = extraMessageFontSize.sp, textAlign = extraMessageAlignment)
-                        Image(bitmap = bitmap.asImageBitmap(), contentDescription = "Captured Image")
+                        // ✅ Title
+                        Text(
+                            text = title,
+                            color = dialogTitleColor,
+                            fontSize = titleFontSize.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = titleAlignment,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+
+
+                        // ✅ Extra Message (Warnings)
+                        Text(
+                            text = extraMessage,
+                            color = extraMessageColor,
+                            fontSize = extraMessageFontSize.sp,
+                            textAlign = extraMessageAlignment,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+
+                        // ✅ Captured Image Display
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Captured Image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .padding(8.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // ✅ Button Row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            // 🔄 **Retake Button (ถ่ายใหม่)**
+                            Button(
+                                onClick = onRetake,
+                                colors = ButtonDefaults.buttonColors(containerColor = retakeButtonBackgroundColor),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(buttonHeight)
+                                    .border(retakeButtonBorderWidth, retakeButtonBorderColor, RoundedCornerShape(24.dp))
+                            ) {
+                                Text(
+                                    text = retakeButtonText,
+                                    color = retakeButtonTextColor,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            // ✅ **Confirm Button (ยืนยัน)**
+                            Button(
+                                onClick = onConfirm,
+                                colors = ButtonDefaults.buttonColors(containerColor = confirmButtonBackgroundColor),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(buttonHeight)
+                                    .border(confirmButtonBorderWidth, confirmButtonBorderColor, RoundedCornerShape(24.dp))
+                            ) {
+                                Text(
+                                    text = confirmButtonText,
+                                    color = confirmButtonTextColor,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
 
 
 

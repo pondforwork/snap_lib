@@ -128,27 +128,27 @@ private fun handleSnap(call: MethodCall, result: MethodChannel.Result, snapMode:
     val warningBrightnessLower = call.argument<String>("warningBrightnessLower") ?: "🔹 เพิ่มความสว่าง"
     val warningGlare = call.argument<String>("warningGlare") ?: "🔹 ลดแสงสะท้อน"
 
-    // ✅ Handle Dialog Settings
+    // ✅ Handle Dialog Settings (Fixed)
     val dialogSettings = mapOf(
-        "dialogBackgroundColor" to (call.argument<Int>("dialogBackgroundColor") ?: 0xFFFFFFFF.toInt()),
-        "dialogTitleColor" to (call.argument<Int>("dialogTitleColor") ?: 0xFF2D3892.toInt()),
-        "dialogSubtitleColor" to (call.argument<Int>("dialogSubtitleColor") ?: 0xFF888888.toInt()),
-        "dialogButtonConfirmColor" to (call.argument<Int>("dialogButtonConfirmColor") ?: 0xFF2D3892.toInt()),
-        "dialogButtonRetakeColor" to (call.argument<Int>("dialogButtonRetakeColor") ?: 0xFFFFFFFF.toInt()),
-        "dialogButtonTextColor" to (call.argument<Int>("dialogButtonTextColor") ?: 0xFF000000.toInt()),
+        "dialogBackgroundColor" to (call.argument<Number>("dialogBackgroundColor")?.toInt() ?: 0xFFFFFFFF.toInt()),
+        "dialogTitleColor" to (call.argument<Number>("dialogTitleColor")?.toInt() ?: 0xFF2D3892.toInt()),
+        "dialogSubtitleColor" to (call.argument<Number>("dialogSubtitleColor")?.toInt() ?: 0xFF888888.toInt()),
+        "dialogButtonConfirmColor" to (call.argument<Number>("dialogButtonConfirmColor")?.toInt() ?: 0xFF2D3892.toInt()),
+        "dialogButtonRetakeColor" to (call.argument<Number>("dialogButtonRetakeColor")?.toInt() ?: 0xFFFFFFFF.toInt()),
+        "dialogButtonTextColor" to (call.argument<Number>("dialogButtonTextColor")?.toInt() ?: 0xFF000000.toInt()),
         "dialogAlignment" to (call.argument<String>("dialogAlignment") ?: "center"),
         "dialogTitle" to (call.argument<String>("dialogTitle") ?: "ยืนยันข้อมูล"),
-        "dialogTitleFontSize" to (call.argument<Int>("dialogTitleFontSize") ?: 22),
+        "dialogTitleFontSize" to (call.argument<Number>("dialogTitleFontSize")?.toInt() ?: 22),
         "dialogTitleAlignment" to (call.argument<String>("dialogTitleAlignment") ?: "center"),
         "dialogSubtitle" to (call.argument<String>("dialogSubtitle") ?: "กรุณาตรวจสอบความชัดเจนของภาพบัตร"),
-        "dialogSubtitleFontSize" to (call.argument<Int>("dialogSubtitleFontSize") ?: 14),
+        "dialogSubtitleFontSize" to (call.argument<Number>("dialogSubtitleFontSize")?.toInt() ?: 14),
         "dialogSubtitleAlignment" to (call.argument<String>("dialogSubtitleAlignment") ?: "center"),
         "dialogExtraMessage" to (call.argument<String>("dialogExtraMessage") ?: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน"),
-        "dialogExtraMessageColor" to (call.argument<Int>("dialogExtraMessageColor") ?: 0xFF000000.toInt()),
-        "dialogExtraMessageFontSize" to (call.argument<Int>("dialogExtraMessageFontSize") ?: 14),
+        "dialogExtraMessageColor" to (call.argument<Number>("dialogExtraMessageColor")?.toInt() ?: 0xFF000000.toInt()),
+        "dialogExtraMessageFontSize" to (call.argument<Number>("dialogExtraMessageFontSize")?.toInt() ?: 14),
         "dialogExtraMessageAlignment" to (call.argument<String>("dialogExtraMessageAlignment") ?: "center"),
-        "dialogBorderRadius" to (call.argument<Int>("dialogBorderRadius") ?: 16),
-        "dialogButtonHeight" to (call.argument<Int>("dialogButtonHeight") ?: 48)
+        "dialogBorderRadius" to (call.argument<Number>("dialogBorderRadius")?.toInt() ?: 16),
+        "dialogButtonHeight" to (call.argument<Number>("dialogButtonHeight")?.toInt() ?: 48)
     )
 
     val intent = if (snapMode == "front") {
