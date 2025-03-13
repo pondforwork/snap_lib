@@ -1,7 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
+import 'package:snap_lib/settings/ImageProcessingSettings.dart';
+import 'package:snap_lib/settings/WarningMessages.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
-import 'package:snap_lib/settings/scan_face_setting.dart';
 
 class SnapLib {
   static const MethodChannel _channel = MethodChannel('image_processor_plugin');
@@ -200,40 +201,37 @@ class SnapLib {
   }
 
   static Future<String?> startCardSnap(
-      FrontSnapSettings frontSnapSettings) async {
+    FrontSnapSettings frontSnapSettings,
+    ImageProcessingSettings processingSettings,
+    WarningMessages warningMessages,
+  ) async {
     var result = await _snapChannel.invokeMethod('startFrontSnap', {
-      'titleMessage': frontSnapSettings.titleMessage,
-      'titleFontSize': frontSnapSettings.titleFontSize,
-      'guideMessageFontSize': frontSnapSettings.guideMessageFontSize,
-      'initialMessage': frontSnapSettings.initialMessage,
-      'foundMessage': frontSnapSettings.foundMessage,
-      'notFoundMessage': frontSnapSettings.notFoundMessage,
-      'snapMode': frontSnapSettings.snapMode.name,
-    });
-    if (result == null) {
-      return null;
-    } else {
-      return result.toString();
-    }
-  }
-
-  static Future<String?> startFaceScan(ScanFaceSettings faceSettings) async {
-    var result = await _snapChannel.invokeMethod('startCameraOverlay', {
-      'guideText': faceSettings.guideText,
-      'instructionText': faceSettings.instructionText,
-      'successText': faceSettings.successText,
-      'borderColorSuccess': faceSettings.borderColorSuccess,
-      'borderColorDefault': faceSettings.borderColorDefault,
-      'textColorDefault': faceSettings.textColorDefault,
-      'textColorSuccess': faceSettings.textColorSuccess,
-      'guideFontSize': faceSettings.guideFontSize,
-      'instructionFontSize': faceSettings.instructionFontSize,
-      'guideTextColor': faceSettings.guideTextColor,
-      'instructionTextColor': faceSettings.instructionTextColor,
-      'faceSnapMode': faceSettings.faceSnapMode.name,
+      ...frontSnapSettings.toMap(),
+      ...processingSettings.toMap(),
+      ...warningMessages.toMap(),
     });
 
     return result?.toString();
+  }
+
+  static Future<void> startFrontSnap({
+    required String titleMessage,
+    required String initialMessage,
+    required String foundMessage,
+    required String notFoundMessage,
+    required String snapMode,
+  }) async {
+    try {
+      await _channel.invokeMethod('startFrontSnap', {
+        "titleMessage": titleMessage,
+        "initialMessage": initialMessage,
+        "foundMessage": foundMessage,
+        "notFoundMessage": notFoundMessage,
+        "snapMode": snapMode,
+      });
+    } catch (e) {
+      print("Error: $e");
+    }
   }
 
   /// Process an image and convert it to grayscale

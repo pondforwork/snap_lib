@@ -154,10 +154,9 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
 
     // ตัวแปรรอรับค่า Base 64 ที่จะส่งคืน
     private var base64Image = "";
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        mat = Mat()
         // Get the parameter from the intent
         titleMessage = intent.getStringExtra("titleMessage") ?: "ถ่ายภาพหน้าบัตร"
         titleFontSize = intent.getStringExtra("titleFontSize")?.toIntOrNull() ?: 20
@@ -513,13 +512,16 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                 val bitmap = imageProxy.toBitmap()
 
                 val rotatedBitmap = rotateBitmap(bitmap, 90f)
+                val mat  = bitmapToMat(rotatedBitmap)
 
                 val outputBuffer = predictClasss(rotatedBitmap)
 //                processing condition
                 val noiseLevel = imageProcessorPlugin.calculateSNR(mat)
                 val brightness = imageProcessorPlugin.calculateBrightness(mat)
                 val glare = imageProcessorPlugin.calculateGlare(mat)
-
+                Log.d("ImageProcessing", "Noise Level (SNR): $noiseLevel")
+                Log.d("ImageProcessing", "Brightness: $brightness")
+                Log.d("ImageProcessing", "Glare Percentage: $glare%")
                 // ถ้าได้ Output ของการ Predict ออกมา
                 if (outputBuffer != null) {
                     val outputArray = outputBuffer.floatArray
@@ -532,31 +534,40 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                     Log.d("NewActivity", "maxIndex: $maxIndex")
                     // ถ้าเป็น Class 0
                     // 0 คือ บัตรประชาชน
-                    var detectedWarnings = ""
-                    if (maxIndex == 0 ){
-                        // condition for processing
+                    if (maxIndex == 0) {
+                        // ✅ Initialize detectedWarnings as an empty string
+                        var detectedWarnings = ""
+
+                        // ✅ Check conditions and append warnings
                         if (isDetectNoise && noiseLevel > maxNoiseValue) {
-                            detectedWarnings += warningNoise
+                            detectedWarnings += "$warningNoise\n"
+                            Log.d("Warning", "Noise Too High: $noiseLevel (Max: $maxNoiseValue)")
                         }
                         if (isDetectBrightness && brightness > maxBrightnessValue) {
-                            detectedWarnings += warningBrightnessOver
+                            detectedWarnings += "$warningBrightnessOver\n"
+                            Log.d("Warning", "Brightness Too High: $brightness (Max: $maxBrightnessValue)")
                         }
-                        if (isDetectGlare && glare > maxGlarePercent) {
-                            detectedWarnings += warningGlare
+                        if (isDetectGlare && (glare * 100) > maxGlarePercent) {
+                            detectedWarnings += "$warningGlare\n"
+                            Log.d("Warning", "Glare Too High: $glare% (Max: $maxGlarePercent%)")
                         }
-                        if(isDetectBrightness && brightness < minBrightnessValue){
-                            detectedWarnings += warningBrightnessLower
+                        if (isDetectBrightness && brightness < minBrightnessValue) {
+                            detectedWarnings += "$warningBrightnessLower\n"
+                            Log.d("Warning", "Brightness Too Low: $brightness (Min: $minBrightnessValue)")
                         }
 
                         if (detectedWarnings.isNotEmpty()) {
-                            cameraViewModel.updateGuideText("$warningMessage:$detectedWarnings")
+                            cameraViewModel.updateGuideText(detectedWarnings.trim()) // Trim to remove trailing newline
                             isFound = false
+                        } else {
+                            isFound = true
+                            cameraViewModel.updateGuideText(foundMessage) // If no warnings, show found message
                         }
-
-                    }else{
+                    } else {
                         isFound = false
                         cameraViewModel.updateGuideText(notFoundMessage)
                     }
+
                 } else {
                     Log.d("NewActivity", "Output buffer is null")
                 }

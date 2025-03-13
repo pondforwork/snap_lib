@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:snap_lib/settings/ImageProcessingSettings.dart';
+import 'package:snap_lib/settings/WarningMessages.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
-import 'package:snap_lib/settings/scan_face_setting.dart';
 import 'package:snap_lib/snap_lib.dart';
 import 'package:snap_lib_example/examples/apply_gamma_page.dart';
 import 'package:snap_lib_example/examples/calculate_brightness_page.dart';
@@ -94,23 +95,14 @@ class HomeScreen extends StatelessWidget {
 
           // Normal Button for openScanFace
           _buildCustomButton(
-              title: "Open Scan Face",
-              onTap: () => SnapLib.startFaceScan(
-                    ScanFaceSettings(
-                      guideText: "กรุณาให้ใบหน้าอยู่ในกรอบ7y67yy",
-                      instructionText: "อย่าปิดตา จมูก ปาก หรือคาง",
-                      successText: "โปรดถือไว้",
-                      borderColorSuccess: 0xFF00FF00,
-                      borderColorDefault: 0xFFFF0000,
-                      textColorDefault: 0xFFFFFFFF,
-                      textColorSuccess: 0xFF00FF00,
-                      guideFontSize: 24.0,
-                      instructionFontSize: 20.0,
-                      guideTextColor: 0xFFFFFF00,
-                      instructionTextColor: 0x00FFFF,
-                      faceSnapMode: FaceSnapMode.strict, // Use strict mode
-                    ),
-                  ))
+            title: "Open Scan Face",
+            onTap: () => SnapLib.startFrontSnap(
+                titleMessage: "สแกนหน้า",
+                initialMessage: "กรุณาวางใบหน้าในกรอบ",
+                foundMessage: "ถือนิ่งๆ",
+                notFoundMessage: "กรุณาวางใบหน้าในกรอบ",
+                snapMode: 'front'),
+          ),
         ],
       ),
 
@@ -118,7 +110,31 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Default to front card scan
-          SnapLib.startCardSnap(settingsFront);
+          SnapLib.startCardSnap(
+            FrontSnapSettings(
+              titleMessage: "ถ่ายภาพหน้าบัตร",
+              initialMessage: "กรุณาวางบัตรในกรอบ",
+              foundMessage: "พบบัตร ถือค้างไว้",
+              notFoundMessage: "ไม่พบบัตร",
+              snapMode: SnapMode.front,
+            ),
+            ImageProcessingSettings(
+              isDetectNoise: true,
+              isDetectBrightness: true,
+              isDetectGlare: true,
+              maxNoiseValue: 3.5,
+              maxBrightnessValue: 130.0,
+              minBrightnessValue: 90.0,
+              maxGlarePercent: 1.0,
+            ),
+            WarningMessages(
+              warningMessage: "⚠️ กรุณาปรับแสงให้เหมาะสม",
+              warningNoise: "⚠️ โปรดลด Noise",
+              warningBrightnessOver: "⚠️ แสงจ้าเกินไป",
+              warningBrightnessLower: "⚠️ แสงน้อยเกินไป",
+              warningGlare: "⚠️ ลดแสงสะท้อน",
+            ),
+          );
           // To scan back card, change to settingsBack
         },
         child: const Icon(Icons.camera_alt),
