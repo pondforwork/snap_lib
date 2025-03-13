@@ -251,8 +251,17 @@ class ScanFaceActivity : ComponentActivity() {
             CameraOverlay(
                 guideText = overlaySettings.guideText,
                 instructionText = overlaySettings.instructionText,
+                successText = "ถือค้างไว้", // Face found success text
                 borderColorSuccess = Color.Green,
-                borderColorDefault = Color.Red
+                borderColorDefault = Color.Red,
+                textColorDefault = Color.White,
+                textColorSuccess = Color.Green,
+                guideTextStyle = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Yellow),
+                instructionTextStyle = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color.Cyan),
+                guideTextAlignment = Alignment.TopCenter,
+                instructionTextAlignment = Alignment.BottomCenter,
+                paddingTop = 24.dp,
+                paddingBottom = 24.dp
             )
 
             if (startCaptureAnimation) {
@@ -301,7 +310,9 @@ class ScanFaceActivity : ComponentActivity() {
         var guideFontSize: Float,
         var instructionFontSize: Float,
         var guideTextColor: Int,
-        var instructionTextColor: Int
+        var instructionTextColor: Int,
+        var guideTextPosition: String = "Top", // "Top", "Center", "Bottom"
+        var instructionTextPosition: String = "Bottom" // "Top", "Center", "Bottom"
     )
 
     fun convertBitmapToBase64(bitmap: Bitmap): String {
@@ -365,28 +376,49 @@ class ScanFaceActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // ✅ Guide Text (Top)
-                Text(
-                    text = overlaySettings.guideText,
-                    fontSize = overlaySettings.guideFontSize.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = textColor,
-                    modifier = Modifier.padding(top = 32.dp)
-                )
+                // ✅ Guide Text Position (User-defined)
+                if (overlaySettings.guideTextPosition == "Top") {
+                    Text(
+                        text = overlaySettings.guideText,
+                        fontSize = overlaySettings.guideFontSize.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor,
+                        modifier = Modifier.padding(top = 32.dp)
+                    )
+                } else if (overlaySettings.guideTextPosition == "Center") {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = overlaySettings.guideText,
+                        fontSize = overlaySettings.guideFontSize.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                }
 
-                Spacer(modifier = Modifier.weight(1f)) // Push instruction text down
-
-                // ✅ Instruction Text (Bottom)
-                Text(
-                    text = overlaySettings.instructionText,
-                    fontSize = overlaySettings.instructionFontSize.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color(overlaySettings.instructionTextColor),
-                    modifier = Modifier.padding(bottom = 32.dp)
-                )
+                // ✅ Instruction Text Position (User-defined)
+                if (overlaySettings.instructionTextPosition == "Bottom") {
+                    Text(
+                        text = overlaySettings.instructionText,
+                        fontSize = overlaySettings.instructionFontSize.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color(overlaySettings.instructionTextColor),
+                        modifier = Modifier.padding(bottom = 32.dp)
+                    )
+                } else if (overlaySettings.instructionTextPosition == "Center") {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = overlaySettings.instructionText,
+                        fontSize = overlaySettings.instructionFontSize.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color(overlaySettings.instructionTextColor)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
         }
     }
+
 
 
 
