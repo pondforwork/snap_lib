@@ -548,6 +548,7 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
 
 
 
+
         }
     }
 
@@ -769,147 +770,54 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
     @Composable
     fun ShowImageDialog(
         bitmap: Bitmap,
-        onRetake: () -> Unit, // Callback for "ถ่ายใหม่"
-        onConfirm: () -> Unit, // Callback for "ยืนยัน"
+        onRetake: () -> Unit,
+        onConfirm: () -> Unit,
 
         // ✅ Customizable UI properties
-        dialogBackgroundColor: Color = Color.White,
-        dialogTitleColor: Color = Color(0xFF2D3892),
-        dialogSubtitleColor: Color = Color.Gray,
-        dialogButtonConfirmColor: Color = Color(0xFF2D3892),
-        dialogButtonRetakeColor: Color = Color.White,
-        dialogButtonTextColor: Color = Color.White,
-        dialogAlignment: Alignment = Alignment.Center, // ✅ Dialog position
+        dialogBackgroundColor: Color,
+        dialogTitleColor: Color,
+        dialogSubtitleColor: Color,
+        dialogButtonConfirmColor: Color,
+        dialogButtonRetakeColor: Color,
+        dialogButtonTextColor: Color,
+        dialogAlignment: Alignment,
 
-        title: String = "ยืนยันข้อมูล",
-        titleFontSize: Int = 22,
-        titleAlignment: TextAlign = TextAlign.Center, // ✅ Title alignment
+        title: String,
+        titleFontSize: Int,
+        titleAlignment: TextAlign,
 
-        subtitle: String = "กรุณาตรวจสอบความชัดเจนของภาพบัตร",
-        subtitleFontSize: Int = 14,
-        subtitleAlignment: TextAlign = TextAlign.Center, // ✅ Subtitle alignment
+        subtitle: String,
+        subtitleFontSize: Int,
+        subtitleAlignment: TextAlign,
 
-        // ✅ Extra Message
-        extraMessage: String = "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
-        extraMessageColor: Color = Color.Black,
-        extraMessageFontSize: Int = 14,
-        extraMessageAlignment: TextAlign = TextAlign.Center,
+        extraMessage: String,
+        extraMessageColor: Color,
+        extraMessageFontSize: Int,
+        extraMessageAlignment: TextAlign,
 
-        borderRadius: Dp = 16.dp, // ✅ Rounded corners
-        buttonHeight: Dp = 48.dp
+        borderRadius: Dp,
+        buttonHeight: Dp
     ) {
-        Dialog(onDismissRequest = { /* Prevent dismiss by clicking outside */ }) {
+        Dialog(onDismissRequest = { }) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.8f)) // Dim background
+                modifier = Modifier.fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.8f))
                     .padding(8.dp),
-                contentAlignment = dialogAlignment // ✅ Allow user to set dialog position
+                contentAlignment = dialogAlignment
             ) {
                 Surface(
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .padding(8.dp),
                     shape = RoundedCornerShape(borderRadius),
                     color = dialogBackgroundColor,
                     shadowElevation = 12.dp
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // ✅ Title Text
-                        Text(
-                            text = title,
-                            color = dialogTitleColor,
-                            fontSize = titleFontSize.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = titleAlignment,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp)
-                        )
-
-                        // ✅ Subtitle
-                        Text(
-                            text = subtitle,
-                            color = dialogSubtitleColor,
-                            fontSize = subtitleFontSize.sp,
-                            textAlign = subtitleAlignment,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp)
-                        )
-
-                        // ✅ Extra Message
-                        Text(
-                            text = extraMessage,
-                            color = extraMessageColor,
-                            fontSize = extraMessageFontSize.sp,
-                            textAlign = extraMessageAlignment,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp)
-                        )
-
-                        // ✅ Display the captured image
-                        Image(
-                            bitmap = bitmap.asImageBitmap(),
-                            contentDescription = "Captured Image",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .padding(8.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // ✅ Button row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            // Retake Button
-                            Button(
-                                onClick = onRetake,
-                                colors = ButtonDefaults.buttonColors(containerColor = dialogButtonRetakeColor),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(buttonHeight)
-                                    .border(2.dp, Color.Gray, RoundedCornerShape(24.dp))
-                            ) {
-                                Text(
-                                    text = "ถ่ายใหม่",
-                                    color = Color.Black,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            // Confirm Button
-                            Button(
-                                onClick = onConfirm,
-                                colors = ButtonDefaults.buttonColors(containerColor = dialogButtonConfirmColor),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(buttonHeight)
-                                    .border(2.dp, dialogButtonConfirmColor, RoundedCornerShape(24.dp))
-                            ) {
-                                Text(
-                                    text = "ยืนยัน",
-                                    color = dialogButtonTextColor,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
+                        Text(text = title, color = dialogTitleColor, fontSize = titleFontSize.sp, textAlign = titleAlignment)
+                        Text(text = subtitle, color = dialogSubtitleColor, fontSize = subtitleFontSize.sp, textAlign = subtitleAlignment)
+                        Text(text = extraMessage, color = extraMessageColor, fontSize = extraMessageFontSize.sp, textAlign = extraMessageAlignment)
+                        Image(bitmap = bitmap.asImageBitmap(), contentDescription = "Captured Image")
                     }
                 }
             }
