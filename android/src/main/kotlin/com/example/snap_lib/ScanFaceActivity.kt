@@ -313,21 +313,21 @@ class ScanFaceActivity : ComponentActivity() {
 
     @Composable
     fun CameraOverlay(
-        guideText: String,
-        instructionText: String,
-        guideTextColor: Color = Color(overlaySettings.guideTextColor),
-        instructionTextColor: Color = Color(overlaySettings.instructionTextColor),
-        borderColorSuccess: Color = Color(overlaySettings.borderColorSuccess),
-        borderColorDefault: Color = Color(overlaySettings.borderColorDefault),
-        borderWidth: Dp = 8.dp
+        overlaySettings: OverlaySettings
     ) {
         val borderColor by animateColorAsState(
-            targetValue = if (guideText == "ถือค้างไว้") borderColorSuccess else borderColorDefault,
+            targetValue = if (overlaySettings.guideText == "ถือค้างไว้")
+                Color(overlaySettings.borderColorSuccess)
+            else
+                Color(overlaySettings.borderColorDefault),
             animationSpec = tween(durationMillis = 500)
         )
 
         val textColor by animateColorAsState(
-            targetValue = if (guideText == "ถือค้างไว้") borderColorSuccess else Color.White,
+            targetValue = if (overlaySettings.guideText == "ถือค้างไว้")
+                Color(overlaySettings.textColorSuccess)
+            else
+                Color(overlaySettings.textColorDefault),
             animationSpec = tween(durationMillis = 500)
         )
 
@@ -346,8 +346,18 @@ class ScanFaceActivity : ComponentActivity() {
 
                 // Background with transparent oval
                 drawRect(color = Color.Black.copy(alpha = 0.6f), size = size)
-                drawOval(color = Color.Transparent, topLeft = Offset(ovalLeft, ovalTop), size = Size(ovalWidth, ovalHeight), blendMode = BlendMode.Clear)
-                drawOval(color = borderColor, topLeft = Offset(ovalLeft, ovalTop), size = Size(ovalWidth, ovalHeight), style = Stroke(width = borderWidth.toPx()))
+                drawOval(
+                    color = Color.Transparent,
+                    topLeft = Offset(ovalLeft, ovalTop),
+                    size = Size(ovalWidth, ovalHeight),
+                    blendMode = BlendMode.Clear
+                )
+                drawOval(
+                    color = borderColor,
+                    topLeft = Offset(ovalLeft, ovalTop),
+                    size = Size(ovalWidth, ovalHeight),
+                    style = Stroke(width = 8.dp.toPx())
+                )
             }
 
             Column(
@@ -357,7 +367,7 @@ class ScanFaceActivity : ComponentActivity() {
             ) {
                 // ✅ Guide Text (Top)
                 Text(
-                    text = guideText,
+                    text = overlaySettings.guideText,
                     fontSize = overlaySettings.guideFontSize.sp,
                     fontWeight = FontWeight.Bold,
                     color = textColor,
@@ -368,15 +378,16 @@ class ScanFaceActivity : ComponentActivity() {
 
                 // ✅ Instruction Text (Bottom)
                 Text(
-                    text = instructionText,
+                    text = overlaySettings.instructionText,
                     fontSize = overlaySettings.instructionFontSize.sp,
                     fontWeight = FontWeight.Normal,
-                    color = instructionTextColor,
+                    color = Color(overlaySettings.instructionTextColor),
                     modifier = Modifier.padding(bottom = 32.dp)
                 )
             }
         }
     }
+
 
 
     fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
