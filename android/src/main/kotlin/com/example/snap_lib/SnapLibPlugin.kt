@@ -91,6 +91,15 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             putExtra("warningBrightnessOver", warningBrightnessOver)
             putExtra("warningBrightnessLower", warningBrightnessLower)
             putExtra("warningGlare", warningGlare)
+//dialog
+            // ✅ Pass user-defined custom dialog properties
+            putExtra("dialogBackgroundColor", call.argument<Int>("dialogBackgroundColor") ?: Color.WHITE)
+            putExtra("dialogTitleColor", call.argument<Int>("dialogTitleColor") ?: Color(0xFF2D3892))
+            putExtra("dialogSubtitleColor", call.argument<Int>("dialogSubtitleColor") ?: Color.GRAY)
+            putExtra("dialogButtonConfirmColor", call.argument<Int>("dialogButtonConfirmColor") ?: Color(0xFF2D3892))
+            putExtra("dialogButtonRetakeColor", call.argument<Int>("dialogButtonRetakeColor") ?: Color.WHITE)
+            putExtra("dialogButtonTextColor", call.argument<Int>("dialogButtonTextColor") ?: Color.WHITE)
+            putExtra("dialogAlignment", call.argument<String>("dialogAlignment") ?: "center")
 
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }

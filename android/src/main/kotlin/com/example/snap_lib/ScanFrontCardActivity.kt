@@ -73,6 +73,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -149,7 +150,34 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
     private var foundMessage = "พบบัตร"
     private var notFoundMessage = "ไม่พบบัตร"
     private var snapMode = "front"
+//dialog
 
+    private var dialogSettings = DialogSettings()
+
+    data class DialogSettings(
+        val dialogBackgroundColor: Int = 0xFFFFFFFF.toInt(),
+        val dialogTitleColor: Int = 0xFF2D3892.toInt(),
+        val dialogSubtitleColor: Int = 0xFF888888.toInt(),
+        val dialogButtonConfirmColor: Int = 0xFF2D3892.toInt(),
+        val dialogButtonRetakeColor: Int = 0xFFFFFFFF.toInt(),
+        val dialogButtonTextColor: Int = 0xFF000000.toInt(),
+        val dialogAlignment: String = "center",
+        val dialogTitle: String = "ยืนยันข้อมูล",
+        val dialogTitleFontSize: Int = 22,
+        val dialogTitleAlignment: String = "center",
+        val dialogSubtitle: String = "กรุณาตรวจสอบความชัดเจนของภาพบัตร",
+        val dialogSubtitleFontSize: Int = 14,
+        val dialogSubtitleAlignment: String = "center",
+        val dialogExtraMessage: String = "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
+        val dialogExtraMessageColor: Int = 0xFF000000.toInt(),
+        val dialogExtraMessageFontSize: Int = 14,
+        val dialogExtraMessageAlignment: String = "center",
+        val dialogBorderRadius: Int = 16,
+        val dialogButtonHeight: Int = 48
+    )
+
+
+    //    imageProcessorPlugin
     private lateinit var imageProcessorPlugin: ImageProcessorPlugin
 
     // ตัวแปรรอรับค่า Base 64 ที่จะส่งคืน
@@ -182,6 +210,29 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
         warningGlare = intent.getStringExtra("warningGlare") ?: "🔹 ลดแสงสะท้อน"
         warningBrightnessLower = intent.getStringExtra("warningBrightnessLower") ?: "🔹 เพิ่มความสว่าง"
 
+
+        // ✅ Custom Dialog
+        dialogSettings = DialogSettings(
+            dialogBackgroundColor = intent.getIntExtra("dialogBackgroundColor", 0xFFFFFFFF.toInt()),
+            dialogTitleColor = intent.getIntExtra("dialogTitleColor", 0xFF2D3892.toInt()),
+            dialogSubtitleColor = intent.getIntExtra("dialogSubtitleColor", 0xFF888888.toInt()),
+            dialogButtonConfirmColor = intent.getIntExtra("dialogButtonConfirmColor", 0xFF2D3892.toInt()),
+            dialogButtonRetakeColor = intent.getIntExtra("dialogButtonRetakeColor", 0xFFFFFFFF.toInt()),
+            dialogButtonTextColor = intent.getIntExtra("dialogButtonTextColor", 0xFF000000.toInt()),
+            dialogAlignment = intent.getStringExtra("dialogAlignment") ?: "center",
+            dialogTitle = intent.getStringExtra("dialogTitle") ?: "ยืนยันข้อมูล",
+            dialogTitleFontSize = intent.getIntExtra("dialogTitleFontSize", 22),
+            dialogTitleAlignment = intent.getStringExtra("dialogTitleAlignment") ?: "center",
+            dialogSubtitle = intent.getStringExtra("dialogSubtitle") ?: "กรุณาตรวจสอบความชัดเจนของภาพบัตร",
+            dialogSubtitleFontSize = intent.getIntExtra("dialogSubtitleFontSize", 14),
+            dialogSubtitleAlignment = intent.getStringExtra("dialogSubtitleAlignment") ?: "center",
+            dialogExtraMessage = intent.getStringExtra("dialogExtraMessage") ?: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
+            dialogExtraMessageColor = intent.getIntExtra("dialogExtraMessageColor", 0xFF000000.toInt()),
+            dialogExtraMessageFontSize = intent.getIntExtra("dialogExtraMessageFontSize", 14),
+            dialogExtraMessageAlignment = intent.getStringExtra("dialogExtraMessageAlignment") ?: "center",
+            dialogBorderRadius = intent.getIntExtra("dialogBorderRadius", 16),
+            dialogButtonHeight = intent.getIntExtra("dialogButtonHeight", 48)
+        )
         // สร้างตัวแปร Model Front ที่นี่
         model = ModelFrontNew.newInstance(this)
 
@@ -432,14 +483,11 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
         // Show Dialog
         if (showDialog && bitmapToShow != null) {
             ShowImageDialog(
-                bitmap =  bitmapToShow!!,
+                bitmap = bitmapToShow!!,
                 onRetake = {
                     showDialog = false
-                    // Clear Bitmap List หลังจากปิด Dialog
                     bitmapList.clear()
-                    // กลับมา Predict หลังจากปิด Dialog
                     isPredicting = true
-                    //รีเซ็ต GuideText เมื่อปิด Dialog (ถ่ายใหม่)
                     cameraViewModel.updateGuideText(initialGuideText)
                     isFound = false
                 },
@@ -447,15 +495,58 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                     val resultIntent = Intent()
                     if (base64Image.isNotEmpty()) {
                         resultIntent.putExtra("result", base64Image)
-                        setResult(RESULT_OK, resultIntent) // ใช้ resultIntent แทน base64Image
-                        // Log.w("base64Image", base64Image)
+                        setResult(RESULT_OK, resultIntent)
                         finish()
                     } else {
                         finish()
                     }
+                },
 
-                }
+                // ✅ Apply dialog settings dynamically
+                dialogBackgroundColor = Color(dialogSettings.dialogBackgroundColor),
+                dialogTitleColor = Color(dialogSettings.dialogTitleColor),
+                dialogSubtitleColor = Color(dialogSettings.dialogSubtitleColor),
+                dialogButtonConfirmColor = Color(dialogSettings.dialogButtonConfirmColor),
+                dialogButtonRetakeColor = Color(dialogSettings.dialogButtonRetakeColor),
+                dialogButtonTextColor = Color(dialogSettings.dialogButtonTextColor),
+                dialogAlignment = when (dialogSettings.dialogAlignment) {
+                    "top" -> Alignment.TopCenter
+                    "bottom" -> Alignment.BottomCenter
+                    else -> Alignment.Center
+                },
+
+                // ✅ Apply text settings
+                title = dialogSettings.dialogTitle,
+                titleFontSize = dialogSettings.dialogTitleFontSize,
+                titleAlignment = when (dialogSettings.dialogTitleAlignment) {
+                    "left" -> TextAlign.Left
+                    "right" -> TextAlign.Right
+                    else -> TextAlign.Center
+                },
+
+                subtitle = dialogSettings.dialogSubtitle,
+                subtitleFontSize = dialogSettings.dialogSubtitleFontSize,
+                subtitleAlignment = when (dialogSettings.dialogSubtitleAlignment) {
+                    "left" -> TextAlign.Left
+                    "right" -> TextAlign.Right
+                    else -> TextAlign.Center
+                },
+
+                // ✅ Apply extra message settings
+                extraMessage = dialogSettings.dialogExtraMessage,
+                extraMessageColor = Color(dialogSettings.dialogExtraMessageColor),
+                extraMessageFontSize = dialogSettings.dialogExtraMessageFontSize,
+                extraMessageAlignment = when (dialogSettings.dialogExtraMessageAlignment) {
+                    "left" -> TextAlign.Left
+                    "right" -> TextAlign.Right
+                    else -> TextAlign.Center
+                },
+
+                borderRadius = dialogSettings.dialogBorderRadius.dp,
+                buttonHeight = dialogSettings.dialogButtonHeight.dp
             )
+
+
 
         }
     }
@@ -679,7 +770,33 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
     fun ShowImageDialog(
         bitmap: Bitmap,
         onRetake: () -> Unit, // Callback for "ถ่ายใหม่"
-        onConfirm: () -> Unit // Callback for "ยืนยัน"
+        onConfirm: () -> Unit, // Callback for "ยืนยัน"
+
+        // ✅ Customizable UI properties
+        dialogBackgroundColor: Color = Color.White,
+        dialogTitleColor: Color = Color(0xFF2D3892),
+        dialogSubtitleColor: Color = Color.Gray,
+        dialogButtonConfirmColor: Color = Color(0xFF2D3892),
+        dialogButtonRetakeColor: Color = Color.White,
+        dialogButtonTextColor: Color = Color.White,
+        dialogAlignment: Alignment = Alignment.Center, // ✅ Dialog position
+
+        title: String = "ยืนยันข้อมูล",
+        titleFontSize: Int = 22,
+        titleAlignment: TextAlign = TextAlign.Center, // ✅ Title alignment
+
+        subtitle: String = "กรุณาตรวจสอบความชัดเจนของภาพบัตร",
+        subtitleFontSize: Int = 14,
+        subtitleAlignment: TextAlign = TextAlign.Center, // ✅ Subtitle alignment
+
+        // ✅ Extra Message
+        extraMessage: String = "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
+        extraMessageColor: Color = Color.Black,
+        extraMessageFontSize: Int = 14,
+        extraMessageAlignment: TextAlign = TextAlign.Center,
+
+        borderRadius: Dp = 16.dp, // ✅ Rounded corners
+        buttonHeight: Dp = 48.dp
     ) {
         Dialog(onDismissRequest = { /* Prevent dismiss by clicking outside */ }) {
             Box(
@@ -687,78 +804,89 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.8f)) // Dim background
                     .padding(8.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = dialogAlignment // ✅ Allow user to set dialog position
             ) {
                 Surface(
                     modifier = Modifier
-
                         .wrapContentHeight()
                         .padding(8.dp),
-                    shape = RoundedCornerShape(16.dp), // Rounded corners for a modern look
-                    color = Color.White, // Dialog background
-                    shadowElevation = 12.dp // Subtle shadow for emphasis
+                    shape = RoundedCornerShape(borderRadius),
+                    color = dialogBackgroundColor,
+                    shadowElevation = 12.dp
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Title Text
+                        // ✅ Title Text
                         Text(
-//                            fontFamily = fontKanit,
-                            text = "ยืนยันข้อมูล",
-                            color = Color(0xFF2D3892), // Stylish blue title
-                            fontSize = 22.sp, // Larger font size for prominence
+                            text = title,
+                            color = dialogTitleColor,
+                            fontSize = titleFontSize.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            textAlign = titleAlignment,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
                         )
 
-                        // Subtitle
+                        // ✅ Subtitle
                         Text(
-//                            fontFamily = fontKanit,
-                            text = "กรุณาตรวจสอบความชัดเจนของภาพบัตร",
-                            color = Color.Gray,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            text = subtitle,
+                            color = dialogSubtitleColor,
+                            fontSize = subtitleFontSize.sp,
+                            textAlign = subtitleAlignment,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
                         )
 
-                        // Display the captured image
+                        // ✅ Extra Message
+                        Text(
+                            text = extraMessage,
+                            color = extraMessageColor,
+                            fontSize = extraMessageFontSize.sp,
+                            textAlign = extraMessageAlignment,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
+                        )
+
+                        // ✅ Display the captured image
                         Image(
                             bitmap = bitmap.asImageBitmap(),
                             contentDescription = "Captured Image",
                             modifier = Modifier
-                                .fillMaxWidth() // Wider image
-                                .height(300.dp) // Adjusted height for layout
-                                .clip(RoundedCornerShape(12.dp)) // Rounded corners for the image
-                                .padding(8.dp) // Padding around the image
+                                .fillMaxWidth()
+                                .height(300.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .padding(8.dp)
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Button row
+                        // ✅ Button row
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly // Evenly distribute buttons
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            // ปุ่มถ่ายใหม่
                             // Retake Button
                             Button(
                                 onClick = onRetake,
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                                colors = ButtonDefaults.buttonColors(containerColor = dialogButtonRetakeColor),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(48.dp)
+                                    .height(buttonHeight)
                                     .border(2.dp, Color.Gray, RoundedCornerShape(24.dp))
                             ) {
                                 Text(
-//                                    fontFamily = fontKanit,
                                     text = "ถ่ายใหม่",
                                     color = Color.Black,
                                     fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
                                 )
                             }
 
@@ -767,18 +895,18 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                             // Confirm Button
                             Button(
                                 onClick = onConfirm,
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D3892)),
+                                colors = ButtonDefaults.buttonColors(containerColor = dialogButtonConfirmColor),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(48.dp)
-                                    .border(2.dp, Color(0xFF2D3892), RoundedCornerShape(24.dp)) // Border matches button color
+                                    .height(buttonHeight)
+                                    .border(2.dp, dialogButtonConfirmColor, RoundedCornerShape(24.dp))
                             ) {
                                 Text(
-//                                    fontFamily = fontKanit,
                                     text = "ยืนยัน",
-                                    color = Color.White,
+                                    color = dialogButtonTextColor,
                                     fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
                                 )
                             }
                         }
@@ -787,6 +915,9 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
             }
         }
     }
+
+
+
 }
 
 class CameraViewModel : ViewModel() {
