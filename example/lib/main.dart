@@ -97,12 +97,12 @@ class HomeScreen extends StatelessWidget {
           // Normal Button for openScanFace
           _buildCustomButton(
             title: "Open Scan Face",
-            onTap: () => SnapLib.startFrontSnap(
+            onTap: () => SnapLib.startFaceSnap(
                 titleMessage: "สแกนหน้า",
                 initialMessage: "กรุณาวางใบหน้าในกรอบ",
                 foundMessage: "ถือนิ่งๆ",
                 notFoundMessage: "กรุณาวางใบหน้าในกรอบ",
-                snapMode: 'front'),
+                snapMode: 'back'),
           ),
         ],
       ),
@@ -113,7 +113,7 @@ class HomeScreen extends StatelessWidget {
           // Default to front card scan
           SnapLib.startCardSnap(
               FrontSnapSettings(
-                titleMessage: "สแกนหน้าบัตร",
+                titleMessage: "หลัง",
                 initialMessage: "กรุณาวางบัตรในกรอบ",
                 foundMessage: "พบบัตร ถือค้างไว้",
                 notFoundMessage: "ไม่พบบัตร",
@@ -137,7 +137,8 @@ class HomeScreen extends StatelessWidget {
               ),
               DialogStyleSettings(
                 backgroundColor: 0xFFFFFFFF, // Black
-                titleColor: 0xFFFFFF00, // Yellow
+
+                titleColor: 0xFF000000, // Yellow
                 subtitleColor: 0xFFFFFFFF, // White
                 buttonConfirmColor: 0xFF00FF00, // Green
                 buttonRetakeColor: 0xFFFF0000, // Red

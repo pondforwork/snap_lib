@@ -487,7 +487,8 @@ private var warningMessage = "กรุณาให้บัตรอยู่�
                     val resultIntent = Intent()
                     if (base64Image.isNotEmpty()) {
                         resultIntent.putExtra("result", base64Image)
-                        setResult(RESULT_OK, resultIntent)
+                        setResult(RESULT_OK, resultIntent) // ใช้ resultIntent แทน base64Image
+                         Log.w("base64Image", base64Image)
                         finish()
                     } else {
                         finish()

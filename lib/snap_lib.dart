@@ -217,7 +217,7 @@ class SnapLib {
     return result?.toString();
   }
 
-  static Future<void> startFrontSnap({
+  static Future<void> startFaceSnap({
     required String titleMessage,
     required String initialMessage,
     required String foundMessage,
@@ -225,7 +225,7 @@ class SnapLib {
     required String snapMode,
   }) async {
     try {
-      await _channel.invokeMethod('startFrontSnap', {
+      await _channel.invokeMethod('startFaceSnap', {
         "titleMessage": titleMessage,
         "initialMessage": initialMessage,
         "foundMessage": foundMessage,

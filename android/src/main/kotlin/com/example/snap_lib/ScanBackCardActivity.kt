@@ -127,28 +127,111 @@ class ScanBackCardActivity : AppCompatActivity() {
     private val cameraViewModel: CameraViewModel by viewModels()
     private val rectPositionViewModel: RectPositionViewModel by viewModels()
 
+    //processinf image validatetion
+    private var isDetectNoise = true
+    private var isDetectBrightness = true
+    private var isDetectGlare = true
+    //value
+    private var maxNoiseValue = 3.0
+    private var maxBrightnessValue = 200.0
+    private var minBrightnessValue = 80.0
+    private var maxGlarePercent = 1.0
+    //    waringing text
+    private var warningMessage = "กรุณาให้บัตรอยู่ในแสงที่เพียงพอ"
+    private var warningNoise = "กรุณาเหลียกเหลี่ยงที่มืดเนี่ยงจากมีสัญญาณรบกวน"
+    private var warningBrightnessOver = "กรุณาอยุ่ในที่แสงเหมาะสม"
+    private var warningBrightnessLower= "กรุณาหาแสง"
+    private var warningGlare = "กรุณาหลีกเลี่ยงแสงสะท้อน"
     // การปรับแต่งข้อความและตำแหน่งข้อความ
-    private var titleMessage = "ถ่ายภาพหน้าบัตร"
+    private var titleMessage = "ถ่ายภาพหลังบัตร"
+    private var titleFontSize = 20
+    private var guideMessageFontSize = 20
     private var initialGuideText = "กรุณาวางบัตรในกรอบ"
     private var foundMessage = "พบบัตร"
     private var notFoundMessage = "ไม่พบบัตร"
     private var snapMode = "front"
-
-    private lateinit var imageProcessorPlugin: ImageProcessorPlugin
-
-    // ตัวแปรรอรับค่า Base 64 ที่จะส่งคืน
     private var base64Image = "";
+//dialog
+
+    private var dialogSettings = DialogSettings()
+    private lateinit var imageProcessorPlugin: ImageProcessorPlugin
+    data class DialogSettings(
+        val dialogBackgroundColor: Int = 0xFFFFFFFF.toInt(),
+        val dialogTitleColor: Int = 0xFF2D3892.toInt(),
+        val dialogButtonConfirmColor: Int = 0xFF2D3892.toInt(),
+        val dialogButtonRetakeColor: Int = 0xFFFFFFFF.toInt(),
+        val dialogButtonTextColor: Int = 0xFF000000.toInt(),
+        val dialogAlignment: String = "center",
+        val dialogTitle: String = "ยืนยันข้อมูล",
+        val dialogTitleFontSize: Int = 22,
+        val dialogTitleAlignment: String = "center",
+        val dialogExtraMessage: String = "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
+        val dialogExtraMessageColor: Int = 0xFF000000.toInt(),
+        val dialogExtraMessageFontSize: Int = 14,
+        val dialogExtraMessageAlignment: String = "center",
+        val dialogBorderRadius: Int = 16,
+        val dialogButtonHeight: Int = 48
+    )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        mat = Mat()
         // Get the parameter from the intent
-        titleMessage = intent.getStringExtra("titleMessage") ?: "ถ่ายภาพหน้าบัตร"
+        titleMessage = intent.getStringExtra("titleMessage") ?: "ถ่ายภาพหลังบัตร"
+        titleFontSize = intent.getStringExtra("titleFontSize")?.toIntOrNull() ?: 20
+        guideMessageFontSize = intent.getStringExtra("guideMessageFontSize")?.toIntOrNull() ?: 20
         initialGuideText = intent.getStringExtra("initialMessage") ?: "กรุณาวางบัตรในกรอบ"
         foundMessage = intent.getStringExtra("foundMessage") ?: "พบบัตร ถือค้างไว้"
         notFoundMessage = intent.getStringExtra("notFoundMessage") ?: "ไม่พบบัตร"
         snapMode = intent.getStringExtra("snapMode") ?: "front"
+//valiable from user setting
+        isDetectNoise = intent.getBooleanExtra("isDetectNoise", true)
+        isDetectBrightness = intent.getBooleanExtra("isDetectBrightness", true)
+        isDetectGlare = intent.getBooleanExtra("isDetectGlare", true)
 
+        maxNoiseValue = intent.getDoubleExtra("maxNoiseValue", 3.0)
+        maxBrightnessValue = intent.getDoubleExtra("maxBrightnessValue", 200.0)
+        minBrightnessValue = intent.getDoubleExtra("minBrightnessValue", 80.0)
+        maxGlarePercent = intent.getDoubleExtra("maxGlarePercent", 1.0)
+//      waringin text
+        warningMessage = intent.getStringExtra("warningMessage") ?: "กรุณาปรับแสงให้เหมาะสม"
+
+        warningNoise = intent.getStringExtra("warningNoise") ?: "🔹 ลด Noise ในภาพ"
+        warningBrightnessOver = intent.getStringExtra("warningBrightnessOver") ?: "🔹 ลดความสว่าง"
+        warningGlare = intent.getStringExtra("warningGlare") ?: "🔹 ลดแสงสะท้อน"
+        warningBrightnessLower = intent.getStringExtra("warningBrightnessLower") ?: "🔹 เพิ่มความสว่าง"
+
+
+        // ✅ Custom Dialog
+        dialogSettings = ScanBackCardActivity.DialogSettings(
+            dialogBackgroundColor = intent.getIntExtra("dialogBackgroundColor", 0xFFFFFFFF.toInt()),
+            dialogTitleColor = intent.getIntExtra("dialogTitleColor", 0xFF2D3892.toInt()),
+            dialogButtonConfirmColor = intent.getIntExtra(
+                "dialogButtonConfirmColor",
+                0xFF2D3892.toInt()
+            ),
+            dialogButtonRetakeColor = intent.getIntExtra(
+                "dialogButtonRetakeColor",
+                0xFFFFFFFF.toInt()
+            ),
+            dialogButtonTextColor = intent.getIntExtra("dialogButtonTextColor", 0xFF000000.toInt()),
+            dialogAlignment = intent.getStringExtra("dialogAlignment") ?: "center",
+            dialogTitle = intent.getStringExtra("dialogTitle") ?: "ยืนยันข้อมูล",
+            dialogTitleFontSize = intent.getIntExtra("dialogTitleFontSize", 22),
+            dialogTitleAlignment = intent.getStringExtra("dialogTitleAlignment") ?: "center",
+            dialogExtraMessage = intent.getStringExtra("dialogExtraMessage")
+                ?: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
+            dialogExtraMessageColor = intent.getIntExtra(
+                "dialogExtraMessageColor",
+                0xFF000000.toInt()
+            ),
+            dialogExtraMessageFontSize = intent.getIntExtra("dialogExtraMessageFontSize", 14),
+            dialogExtraMessageAlignment = intent.getStringExtra("dialogExtraMessageAlignment")
+                ?: "center",
+            dialogBorderRadius = intent.getIntExtra("dialogBorderRadius", 16),
+            dialogButtonHeight = intent.getIntExtra("dialogButtonHeight", 48)
+        )
         // สร้างตัวแปร Model Front ที่นี่
         model = ModelFrontNew.newInstance(this)
 
@@ -176,21 +259,21 @@ class ScanBackCardActivity : AppCompatActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally // Center elements horizontally
                         ) {
                             // Title แสดงด้านบน
-                             Text(
- //                                fontFamily = fontKanit,
-                                 text = titleMessage,
-                                 color = Color.White,
-                                 style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-                                 textAlign = TextAlign.Center,
-                                 modifier = Modifier
-                                     .padding(top = 16.dp)
-                                     .wrapContentWidth()
-                             )
+                            Text(
+                                //                                fontFamily = fontKanit,
+                                text = titleMessage,
+                                color = Color.White,
+                                style = TextStyle(fontSize = titleFontSize.sp, fontWeight = FontWeight.Bold),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .padding(top = 16.dp)
+                                    .wrapContentWidth()
+                            )
                             // Camera preview with overlay
                             CameraWithOverlay(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                    // .aspectRatio(4f / 3f), 
+                                // .aspectRatio(4f / 3f),
                                 cameraViewModel = cameraViewModel,
                                 rectPositionViewModel = rectPositionViewModel
                             )
@@ -200,20 +283,7 @@ class ScanBackCardActivity : AppCompatActivity() {
             }
         }
 
-        // Initialize ImageProcessorPlugin
-        // Example call to a method from ImageProcessorPlugin
-        // val exampleBitmap: Bitmap = // ... obtain a Bitmap ...
-        // val processedMat = imageProcessorPlugin.processImage(
-        //     inputMat = imageProcessorPlugin.bitmapToMat(exampleBitmap),
-        //     gamma = 1.0,
-        //     d = 9,
-        //     sigmaColor = 75.0,
-        //     sigmaSpace = 75.0,
-        //     sharpenStrength = 1.0,
-        //     blurKernelWidth = 3.0,
-        //     blurKernelHeight = 3.0
-        // )
-        // ... use processedMat ...
+
     }
 
     @Composable
@@ -222,21 +292,6 @@ class ScanBackCardActivity : AppCompatActivity() {
         cameraViewModel: CameraViewModel,
         rectPositionViewModel: RectPositionViewModel
     ) {
-        // Animation states
-//        val selectedSize = remember { mutableStateOf(0.8f) } // Default rectangle size
-//        val animatedRectWidth = animateFloatAsState(
-//            targetValue = selectedSize.value,
-//            animationSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
-//        )
-
-//        val pulseScale = rememberInfiniteTransition().animateFloat(
-//            initialValue = 1f,
-//            targetValue = 1.1f,
-//            animationSpec = infiniteRepeatable(
-//                animation = tween(1000, easing = FastOutSlowInEasing),
-//                repeatMode = RepeatMode.Reverse
-//            )
-//        )
 
         Box(
             modifier = modifier
@@ -511,9 +566,14 @@ class ScanBackCardActivity : AppCompatActivity() {
                 val bitmap = imageProxy.toBitmap()
 
                 val rotatedBitmap = rotateBitmap(bitmap, 90f)
-
+                val mat  = bitmapToMat(rotatedBitmap)
                 val outputBuffer = predictClasss(rotatedBitmap)
-
+                val noiseLevel = imageProcessorPlugin.calculateSNR(mat)
+                val brightness = imageProcessorPlugin.calculateBrightness(mat)
+                val glare = imageProcessorPlugin.calculateGlare(mat)
+                Log.d("ImageProcessing", "Noise Level (SNR): $noiseLevel")
+                Log.d("ImageProcessing", "Brightness: $brightness")
+                Log.d("ImageProcessing", "Glare Percentage: $glare%")
                 // ถ้าได้ Output ของการ Predict ออกมา
                 if (outputBuffer != null) {
                     val outputArray = outputBuffer.floatArray
@@ -522,14 +582,41 @@ class ScanBackCardActivity : AppCompatActivity() {
                         .filter { outputArray[it] >= 0.8 } // เลือก index ที่ค่า >= 80
                         .maxByOrNull { outputArray[it] }
                         ?: 4 // หากไม่มี index ที่เข้าเงื่อนไข ให้ใช้ค่า default เป็น 4
-
+//                processing condition
                     Log.d("NewActivity", "maxIndex: $maxIndex")
+
                     // ถ้าเป็น Class 0
                     // 0 คือ บัตรประชาชน
-                    if (maxIndex == 0 ){
-                        cameraViewModel.updateGuideText(foundMessage)
-                        isFound = true
-                    }else{
+                    if (maxIndex == 0) {
+                        // ✅ Initialize detectedWarnings as an empty string
+                        var detectedWarnings = ""
+
+                        // ✅ Check conditions and append warnings
+                        if (isDetectNoise && noiseLevel > maxNoiseValue) {
+                            detectedWarnings = "$warningNoise\n"
+                            Log.d("Warning", "Noise Too High: $noiseLevel (Max: $maxNoiseValue)")
+                        }
+                        if (isDetectBrightness && brightness > maxBrightnessValue) {
+                            detectedWarnings = "$warningBrightnessOver\n"
+                            Log.d("Warning", "Brightness Too High: $brightness (Max: $maxBrightnessValue)")
+                        }
+                        if (isDetectGlare && (glare * 100) > maxGlarePercent) {
+                            detectedWarnings = "$warningGlare\n"
+                            Log.d("Warning", "Glare Too High: $glare% (Max: $maxGlarePercent%)")
+                        }
+                        if (isDetectBrightness && brightness < minBrightnessValue) {
+                            detectedWarnings = "$warningBrightnessLower\n"
+                            Log.d("Warning", "Brightness Too Low: $brightness (Min: $minBrightnessValue)")
+                        }
+
+                        if (detectedWarnings.isNotEmpty()) {
+                            cameraViewModel.updateGuideText(detectedWarnings.trim()) // Trim to remove trailing newline
+                            isFound = false
+                        } else {
+                            isFound = true
+                            cameraViewModel.updateGuideText(foundMessage) // If no warnings, show found message
+                        }
+                    } else {
                         isFound = false
                         cameraViewModel.updateGuideText(notFoundMessage)
                     }
