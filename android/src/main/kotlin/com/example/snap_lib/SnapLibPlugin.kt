@@ -41,160 +41,83 @@ class SnapLibPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
     }
 
-//    private fun handleSnap(call: MethodCall, result: MethodChannel.Result, snapMode: String) {
-//        val titleMessage = call.argument<String>("titleMessage") ?: "Scanning ${snapMode.capitalize()} Card"
-//        val initialMessage = call.argument<String>("initialMessage") ?: "Please position your card"
-//        val foundMessage = call.argument<String>("foundMessage") ?: "Card detected"
-//        val notFoundMessage = call.argument<String>("notFoundMessage") ?: "No card found"
-//
-//        val isDetectNoise = call.argument<Boolean>("isDetectNoise") ?: true
-//        val isDetectBrightness = call.argument<Boolean>("isDetectBrightness") ?: true
-//        val isDetectGlare = call.argument<Boolean>("isDetectGlare") ?: true
-//
-//        val maxNoiseValue = call.argument<Double>("maxNoiseValue") ?: 3.0
-//        val maxBrightnessValue = call.argument<Double>("maxBrightnessValue") ?: 200.0
-//        val minBrightnessValue = call.argument<Double>("minBrightnessValue") ?: 80.0
-//        val maxGlarePercent = call.argument<Double>("maxGlarePercent") ?: 1.0
-//
-//        val warningMessage = call.argument<String>("warningMessage") ?: "กรุณาปรับแสงให้เหมาะสม"
-//        val warningNoise = call.argument<String>("warningNoise") ?: "🔹 ลด Noise ในภาพ"
-//        val warningBrightnessOver = call.argument<String>("warningBrightnessOver") ?: "🔹 ลดความสว่าง"
-//        val warningBrightnessLower = call.argument<String>("warningBrightnessLower") ?: "🔹 เพิ่มความสว่าง"
-//        val warningGlare = call.argument<String>("warningGlare") ?: "🔹 ลดแสงสะท้อน"
-//
-//        val intent = if (snapMode == "front") {
-//            Intent(context, ScanFrontCardActivity::class.java)
-//        } else {
-//            Intent(context, ScanBackCardActivity::class.java)
-//        }
-//
-//        intent.apply {
-//            putExtra("titleMessage", titleMessage)
-//            putExtra("initialMessage", initialMessage)
-//            putExtra("foundMessage", foundMessage)
-//            putExtra("notFoundMessage", notFoundMessage)
-//            putExtra("snapMode", snapMode)
-//
-//            // ✅ ส่งค่าการตั้งค่าตรวจจับ
-//            putExtra("isDetectNoise", isDetectNoise)
-//            putExtra("isDetectBrightness", isDetectBrightness)
-//            putExtra("isDetectGlare", isDetectGlare)
-//
-//            putExtra("maxNoiseValue", maxNoiseValue)
-//            putExtra("maxBrightnessValue", maxBrightnessValue)
-//            putExtra("minBrightnessValue", minBrightnessValue)
-//            putExtra("maxGlarePercent", maxGlarePercent)
-//
-//            // ✅ ส่งค่าข้อความแจ้งเตือนที่กำหนดเอง
-//            putExtra("warningMessage", warningMessage)
-//            putExtra("warningNoise", warningNoise)
-//            putExtra("warningBrightnessOver", warningBrightnessOver)
-//            putExtra("warningBrightnessLower", warningBrightnessLower)
-//            putExtra("warningGlare", warningGlare)
-////dialog
-//            // ✅ Pass user-defined custom dialog properties
-//            putExtra("dialogBackgroundColor", call.argument<Int>("dialogBackgroundColor") ?: Color.WHITE)
-//            putExtra("dialogTitleColor", call.argument<Int>("dialogTitleColor") ?: Color(0xFF2D3892))
-//            putExtra("dialogSubtitleColor", call.argument<Int>("dialogSubtitleColor") ?: Color.GRAY)
-//            putExtra("dialogButtonConfirmColor", call.argument<Int>("dialogButtonConfirmColor") ?: Color(0xFF2D3892))
-//            putExtra("dialogButtonRetakeColor", call.argument<Int>("dialogButtonRetakeColor") ?: Color.WHITE)
-//            putExtra("dialogButtonTextColor", call.argument<Int>("dialogButtonTextColor") ?: Color.WHITE)
-//            putExtra("dialogAlignment", call.argument<String>("dialogAlignment") ?: "center")
-//
-//            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//        }
-//
-//        context.startActivity(intent)
-//        result.success("Snap Started for $snapMode card")
-//    }
-private fun handleSnap(call: MethodCall, result: MethodChannel.Result, snapMode: String) {
-    val titleMessage = call.argument<String>("titleMessage") ?: "Scanning ${snapMode.capitalize()} Card"
-    val initialMessage = call.argument<String>("initialMessage") ?: "Please position your card"
-    val foundMessage = call.argument<String>("foundMessage") ?: "Card detected"
-    val notFoundMessage = call.argument<String>("notFoundMessage") ?: "No card found"
 
-    val isDetectNoise = call.argument<Boolean>("isDetectNoise") ?: true
-    val isDetectBrightness = call.argument<Boolean>("isDetectBrightness") ?: true
-    val isDetectGlare = call.argument<Boolean>("isDetectGlare") ?: true
+    private fun handleSnap(call: MethodCall, result: MethodChannel.Result, snapMode: String) {
+        val titleMessage = call.argument<String>("titleMessage") ?: "Scanning ${snapMode.capitalize()} Card"
+        val initialMessage = call.argument<String>("initialMessage") ?: "Please position your card"
+        val foundMessage = call.argument<String>("foundMessage") ?: "Card detected"
+        val notFoundMessage = call.argument<String>("notFoundMessage") ?: "No card found"
 
-    val maxNoiseValue = call.argument<Double>("maxNoiseValue") ?: 3.0
-    val maxBrightnessValue = call.argument<Double>("maxBrightnessValue") ?: 200.0
-    val minBrightnessValue = call.argument<Double>("minBrightnessValue") ?: 80.0
-    val maxGlarePercent = call.argument<Double>("maxGlarePercent") ?: 1.0
+        val titleFontSize = call.argument<Number>("titleFontSize")?.toInt() ?: 20
+        val guideMessageFontSize = call.argument<Number>("guideMessageFontSize")?.toInt() ?: 20
 
-    val warningMessage = call.argument<String>("warningMessage") ?: "กรุณาปรับแสงให้เหมาะสม"
-    val warningNoise = call.argument<String>("warningNoise") ?: "🔹 ลด Noise ในภาพ"
-    val warningBrightnessOver = call.argument<String>("warningBrightnessOver") ?: "🔹 ลดความสว่าง"
-    val warningBrightnessLower = call.argument<String>("warningBrightnessLower") ?: "🔹 เพิ่มความสว่าง"
-    val warningGlare = call.argument<String>("warningGlare") ?: "🔹 ลดแสงสะท้อน"
+        val isDetectNoise = call.argument<Boolean>("isDetectNoise") ?: true
+        val isDetectBrightness = call.argument<Boolean>("isDetectBrightness") ?: true
+        val isDetectGlare = call.argument<Boolean>("isDetectGlare") ?: true
 
-    // ✅ Handle Dialog Settings (Fixed)
-    val dialogSettings = mapOf(
-        "dialogBackgroundColor" to (call.argument<Number>("dialogBackgroundColor")?.toInt() ?: 0xFFFFFFFF.toInt()),
-        "dialogTitleColor" to (call.argument<Number>("dialogTitleColor")?.toInt() ?: 0xFF2D3892.toInt()),
-        "dialogSubtitleColor" to (call.argument<Number>("dialogSubtitleColor")?.toInt() ?: 0xFF888888.toInt()),
-        "dialogButtonConfirmColor" to (call.argument<Number>("dialogButtonConfirmColor")?.toInt() ?: 0xFF2D3892.toInt()),
-        "dialogButtonRetakeColor" to (call.argument<Number>("dialogButtonRetakeColor")?.toInt() ?: 0xFFFFFFFF.toInt()),
-        "dialogButtonTextColor" to (call.argument<Number>("dialogButtonTextColor")?.toInt() ?: 0xFF000000.toInt()),
-        "dialogAlignment" to (call.argument<String>("dialogAlignment") ?: "center"),
-        "dialogTitle" to (call.argument<String>("dialogTitle") ?: "ยืนยันข้อมูล"),
-        "dialogTitleFontSize" to (call.argument<Number>("dialogTitleFontSize")?.toInt() ?: 22),
-        "dialogTitleAlignment" to (call.argument<String>("dialogTitleAlignment") ?: "center"),
-        "dialogSubtitle" to (call.argument<String>("dialogSubtitle") ?: "กรุณาตรวจสอบความชัดเจนของภาพบัตร"),
-        "dialogSubtitleFontSize" to (call.argument<Number>("dialogSubtitleFontSize")?.toInt() ?: 14),
-        "dialogSubtitleAlignment" to (call.argument<String>("dialogSubtitleAlignment") ?: "center"),
-        "dialogExtraMessage" to (call.argument<String>("dialogExtraMessage") ?: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน"),
-        "dialogExtraMessageColor" to (call.argument<Number>("dialogExtraMessageColor")?.toInt() ?: 0xFF000000.toInt()),
-        "dialogExtraMessageFontSize" to (call.argument<Number>("dialogExtraMessageFontSize")?.toInt() ?: 14),
-        "dialogExtraMessageAlignment" to (call.argument<String>("dialogExtraMessageAlignment") ?: "center"),
-        "dialogBorderRadius" to (call.argument<Number>("dialogBorderRadius")?.toInt() ?: 16),
-        "dialogButtonHeight" to (call.argument<Number>("dialogButtonHeight")?.toInt() ?: 48)
-    )
+        val maxNoiseValue = call.argument<Double>("maxNoiseValue") ?: 3.0
+        val maxBrightnessValue = call.argument<Double>("maxBrightnessValue") ?: 200.0
+        val minBrightnessValue = call.argument<Double>("minBrightnessValue") ?: 80.0
+        val maxGlarePercent = call.argument<Double>("maxGlarePercent") ?: 1.0
 
-    val intent = if (snapMode == "front") {
-        Intent(context, ScanFrontCardActivity::class.java)
-    } else {
-        Intent(context, ScanBackCardActivity::class.java)
-    }
+        val warningMessage = call.argument<String>("warningMessage") ?: "กรุณาปรับแสงให้เหมาะสม"
+        val warningNoise = call.argument<String>("warningNoise") ?: "🔹 ลด Noise ในภาพ"
+        val warningBrightnessOver = call.argument<String>("warningBrightnessOver") ?: "🔹 ลดความสว่าง"
+        val warningBrightnessLower = call.argument<String>("warningBrightnessLower") ?: "🔹 เพิ่มความสว่าง"
+        val warningGlare = call.argument<String>("warningGlare") ?: "🔹 ลดแสงสะท้อน"
 
-    intent.apply {
-        putExtra("titleMessage", titleMessage)
-        putExtra("initialMessage", initialMessage)
-        putExtra("foundMessage", foundMessage)
-        putExtra("notFoundMessage", notFoundMessage)
-        putExtra("snapMode", snapMode)
-
-        // ✅ Add detection settings
-        putExtra("isDetectNoise", isDetectNoise)
-        putExtra("isDetectBrightness", isDetectBrightness)
-        putExtra("isDetectGlare", isDetectGlare)
-        putExtra("maxNoiseValue", maxNoiseValue)
-        putExtra("maxBrightnessValue", maxBrightnessValue)
-        putExtra("minBrightnessValue", minBrightnessValue)
-        putExtra("maxGlarePercent", maxGlarePercent)
-
-        // ✅ Add warning messages
-        putExtra("warningMessage", warningMessage)
-        putExtra("warningNoise", warningNoise)
-        putExtra("warningBrightnessOver", warningBrightnessOver)
-        putExtra("warningBrightnessLower", warningBrightnessLower)
-        putExtra("warningGlare", warningGlare)
-
-        // ✅ Pass dialog settings dynamically
-        dialogSettings.forEach { (key, value) ->
-            when (value) {
-                is String -> putExtra(key, value)
-                is Int -> putExtra(key, value)
-            }
+        val intent = if (snapMode == "front") {
+            Intent(context, ScanFrontCardActivity::class.java)
+        } else {
+            Intent(context, ScanBackCardActivity::class.java)
         }
 
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.apply {
+            putExtra("titleMessage", titleMessage)
+            putExtra("initialMessage", initialMessage)
+            putExtra("foundMessage", foundMessage)
+            putExtra("notFoundMessage", notFoundMessage)
+            putExtra("snapMode", snapMode)
+
+            putExtra("titleFontSize", titleFontSize)
+            putExtra("guideMessageFontSize", guideMessageFontSize)
+
+            putExtra("isDetectNoise", isDetectNoise)
+            putExtra("isDetectBrightness", isDetectBrightness)
+            putExtra("isDetectGlare", isDetectGlare)
+            putExtra("maxNoiseValue", maxNoiseValue)
+            putExtra("maxBrightnessValue", maxBrightnessValue)
+            putExtra("minBrightnessValue", minBrightnessValue)
+            putExtra("maxGlarePercent", maxGlarePercent)
+
+            putExtra("warningMessage", warningMessage)
+            putExtra("warningNoise", warningNoise)
+            putExtra("warningBrightnessOver", warningBrightnessOver)
+            putExtra("warningBrightnessLower", warningBrightnessLower)
+            putExtra("warningGlare", warningGlare)
+
+            putExtra("dialogBackgroundColor", (call.argument<Number>("dialogBackgroundColor") ?: 0xFFFFFFFF).toInt())
+            putExtra("dialogTitleColor", (call.argument<Number>("dialogTitleColor") ?: 0xFF2D3892).toInt())
+            putExtra("dialogButtonConfirmColor", (call.argument<Number>("dialogButtonConfirmColor") ?: 0xFF2D3892).toInt())
+            putExtra("dialogButtonRetakeColor", (call.argument<Number>("dialogButtonRetakeColor") ?: 0xFFFFFFFF).toInt())
+            putExtra("dialogButtonTextColor", (call.argument<Number>("dialogButtonTextColor") ?: 0xFF000000).toInt())
+            putExtra("dialogAlignment", call.argument<String>("dialogAlignment") ?: "center")
+            putExtra("dialogTitle", call.argument<String>("dialogTitle") ?: "ยืนยันข้อมูล")
+            putExtra("dialogTitleFontSize", (call.argument<Number>("dialogTitleFontSize") ?: 22).toInt())
+            putExtra("dialogTitleAlignment", call.argument<String>("dialogTitleAlignment") ?: "center")
+            putExtra("dialogExtraMessage", call.argument<String>("dialogExtraMessage") ?: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน")
+            putExtra("dialogExtraMessageColor", (call.argument<Number>("dialogExtraMessageColor") ?: 0xFF000000).toInt())
+            putExtra("dialogExtraMessageFontSize", (call.argument<Number>("dialogExtraMessageFontSize") ?: 14).toInt())
+            putExtra("dialogExtraMessageAlignment", call.argument<String>("dialogExtraMessageAlignment") ?: "center")
+            putExtra("dialogBorderRadius", (call.argument<Number>("dialogBorderRadius") ?: 16).toInt())
+            putExtra("dialogButtonHeight", (call.argument<Number>("dialogButtonHeight") ?: 48).toInt())
+
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+        context.startActivity(intent)
+        result.success("Snap Started for $snapMode card")
     }
-
-    context.startActivity(intent)
-    result.success("Snap Started for $snapMode card")
-}
-
     private fun startCameraOverlay(call: MethodCall, result: MethodChannel.Result) {
         val intent = Intent(context, ScanFaceActivity::class.java).apply {
             putExtra("guideText", call.argument<String>("guideText") ?: "ให้ใบหน้าอยู่ในกรอบที่กำหนด")
@@ -217,6 +140,25 @@ private fun handleSnap(call: MethodCall, result: MethodChannel.Result, snapMode:
 
             // ✅ Handle Enum String for FaceSnapMode
             putExtra("faceSnapMode", call.argument<String>("faceSnapMode") ?: "normal")
+
+            // ✅ เพิ่มการส่งค่า borderWidth
+            putExtra("borderWidth", (call.argument<Number>("borderWidth") ?: 5).toInt())
+
+            putExtra("dialogBackgroundColor", (call.argument<Number>("dialogBackgroundColor") ?: 0xFFFFFFFF).toInt())
+            putExtra("dialogTitleColor", (call.argument<Number>("dialogTitleColor") ?: 0xFF2D3892).toInt())
+            putExtra("dialogButtonConfirmColor", (call.argument<Number>("dialogButtonConfirmColor") ?: 0xFF2D3892).toInt())
+            putExtra("dialogButtonRetakeColor", (call.argument<Number>("dialogButtonRetakeColor") ?: 0xFFFFFFFF).toInt())
+            putExtra("dialogButtonTextColor", (call.argument<Number>("dialogButtonTextColor") ?: 0xFF000000).toInt())
+            putExtra("dialogAlignment", call.argument<String>("dialogAlignment") ?: "center")
+            putExtra("dialogTitle", call.argument<String>("dialogTitle") ?: "ยืนยันข้อมูล")
+            putExtra("dialogTitleFontSize", (call.argument<Number>("dialogTitleFontSize") ?: 22).toInt())
+            putExtra("dialogTitleAlignment", call.argument<String>("dialogTitleAlignment") ?: "center")
+            putExtra("dialogExtraMessage", call.argument<String>("dialogExtraMessage") ?: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน")
+            putExtra("dialogExtraMessageColor", (call.argument<Number>("dialogExtraMessageColor") ?: 0xFF000000).toInt())
+            putExtra("dialogExtraMessageFontSize", (call.argument<Number>("dialogExtraMessageFontSize") ?: 14).toInt())
+            putExtra("dialogExtraMessageAlignment", call.argument<String>("dialogExtraMessageAlignment") ?: "center")
+            putExtra("dialogBorderRadius", (call.argument<Number>("dialogBorderRadius") ?: 16).toInt())
+            putExtra("dialogButtonHeight", (call.argument<Number>("dialogButtonHeight") ?: 48).toInt())
         }
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
