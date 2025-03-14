@@ -1,7 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:snap_lib/settings/ImageProcessingSettings.dart';
-import 'package:snap_lib/settings/WarningMessages.dart';
+import 'package:snap_lib/settings/scan_face_setting.dart';
+import 'package:snap_lib/settings/warningMessages.dart';
 import 'package:snap_lib/settings/card_process_setting.dart';
 import 'package:snap_lib/settings/dialog_setting.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
@@ -160,22 +161,16 @@ class SnapLib {
   }
 
   static Future<void> startFaceSnap({
-    required String titleMessage,
-    required String initialMessage,
-    required String foundMessage,
-    required String notFoundMessage,
-    required String snapMode,
+    required ScanFaceSettings faceSettings,
+    required DialogStyleSettings dialogSettings,
   }) async {
     try {
       await _snapChannel.invokeMethod('startFaceSnap', {
-        "titleMessage": titleMessage,
-        "initialMessage": initialMessage,
-        "foundMessage": foundMessage,
-        "notFoundMessage": notFoundMessage,
-        "snapMode": snapMode,
+        ...faceSettings.toMap(),
+        ...dialogSettings.toMap(),
       });
     } catch (e) {
-      print("Error: $e");
+      print("🔥 Error in startFaceSnap: $e");
     }
   }
 

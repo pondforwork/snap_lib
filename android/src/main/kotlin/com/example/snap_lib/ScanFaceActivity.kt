@@ -284,9 +284,6 @@ class ScanFaceActivity : ComponentActivity() {
                 overlaySettings = overlaySettings
             )
 
-         
-
-
             if (showDialog && capturedBitmap != null) {
                 ShowImageDialog(
                     bitmap = capturedBitmap!!,

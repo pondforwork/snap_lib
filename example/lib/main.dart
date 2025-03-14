@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:snap_lib/settings/ImageProcessingSettings.dart';
-import 'package:snap_lib/settings/WarningMessages.dart';
+import 'package:snap_lib/settings/scan_face_setting.dart';
+import 'package:snap_lib/settings/warningMessages.dart';
 import 'package:snap_lib/settings/dialog_setting.dart';
 import 'package:snap_lib/settings/front_snap_settings.dart';
 import 'package:snap_lib/snap_lib.dart';
@@ -96,14 +97,21 @@ class HomeScreen extends StatelessWidget {
 
           // Normal Button for openScanFace
           _buildCustomButton(
-            title: "Open Scan Face",
-            onTap: () => SnapLib.startFaceSnap(
-                titleMessage: "สแกนหน้า",
-                initialMessage: "กรุณาวางใบหน้าในกรอบ",
-                foundMessage: "ถือนิ่งๆ",
-                notFoundMessage: "กรุณาวางใบหน้าในกรอบ",
-                snapMode: 'back'),
-          ),
+              title: "Open Scan Face",
+              onTap: () async => await SnapLib.startFaceSnap(
+                    faceSettings: ScanFaceSettings(
+                      guideText: "ให้ใบหน้าอยู่ในกรอบ",
+                      instructionText: "อย่าปิดตา จมูก ปาก หรือคางนะจ๊ะ",
+                      successText: "สำเร็จ!",
+                      borderColorDefault: 0xFF008080,
+                      borderColorSuccess: 0xFF00FF00,
+                    ),
+                    dialogSettings: DialogStyleSettings(
+                      titleColor: 0xFF008080,
+                      extraMessage: "กรุณาตรวจสอบภาพให้ชัดเจน",
+                      extraMessageColor: 0xFFFFA500,
+                    ),
+                  ))
         ],
       ),
 
@@ -129,12 +137,11 @@ class HomeScreen extends StatelessWidget {
                 maxGlarePercent: 1.0,
               ),
               WarningMessages(
-                warningMessage: "⚠️ กรุณาปรับแสงให้เหมาะสม",
-                warningNoise: "⚠️ โปรดลด Noise",
-                warningBrightnessOver: "⚠️ แสงจ้าเกินไป",
-                warningBrightnessLower: "⚠️ แสงน้อยเกินไป",
-                warningGlare: "⚠️ ลดแสงสะท้อน",
-              ),
+                  warningBrightnessLower: "🔹 ความสว่างต่ำเกินไป",
+                  warningBrightnessOver: "🔹 ความสว่างสูงเกินไป",
+                  warningGlare: "🔹 มีแสงสะท้อน",
+                  warningNoise: "🔹 มีรบกวน",
+                  warningMessage: "กรุณาปรับแสงให้เหมาะสม"),
               DialogStyleSettings(
                 backgroundColor: 0xFFFFFFFF, // Black
 

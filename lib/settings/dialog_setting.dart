@@ -25,6 +25,7 @@ class DialogStyleSettings {
     this.extraMessageAlignment = "center",
   });
 
+  /// ✅ Convert settings to map
   Map<String, dynamic> toMap() {
     return {
       'dialogBackgroundColor': backgroundColor,

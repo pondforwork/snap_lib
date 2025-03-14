@@ -2,7 +2,6 @@ class ImageProcessingSettings {
   final bool isDetectNoise;
   final bool isDetectBrightness;
   final bool isDetectGlare;
-
   final double maxNoiseValue;
   final double maxBrightnessValue;
   final double minBrightnessValue;
