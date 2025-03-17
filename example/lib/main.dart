@@ -120,7 +120,7 @@ class HomeScreen extends StatelessWidget {
         onPressed: () {
           // Default to front card scan
           SnapLib.startCardSnap(
-              FrontSnapSettings(
+              CardSnapSettings(
                 titleMessage: "หลัง",
                 initialMessage: "กรุณาวางบัตรในกรอบ",
                 foundMessage: "พบบัตร ถือค้างไว้",
