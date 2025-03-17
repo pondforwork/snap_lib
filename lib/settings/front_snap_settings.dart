@@ -3,7 +3,7 @@ enum SnapMode {
   back,
 }
 
-class FrontSnapSettings {
+class CardSnapSettings {
   final String titleMessage;
   final int titleFontSize;
   final int guideMessageFontSize;
@@ -12,7 +12,7 @@ class FrontSnapSettings {
   final String notFoundMessage;
   final SnapMode snapMode;
 
-  FrontSnapSettings({
+  CardSnapSettings({
     required this.titleMessage,
     this.titleFontSize = 20,
     this.guideMessageFontSize = 25,
