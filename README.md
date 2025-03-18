@@ -1,10 +1,10 @@
 # SnapLib
 
-SnapLib เป็นไลบรารีสำหรับการประมวลผลภาพและการสแกนบัตรประชาชนหรือใบหน้า โดยมีการตั้งค่าต่างๆ ที่สามารถปรับแต่งได้ตามความต้องการ
+SnapLib เป็นไลบรารีสำหรับการประมวลผลภาพและการสแกนใบหน้า/บัตรประชาชน โดยสามารถตั้งค่าและปรับแต่งได้ตามความต้องการ รองรับการปรับแกมมา ลดเสียงรบกวน เพิ่มความคมชัด และตรวจสอบคุณภาพของภาพ
 
 ## การติดตั้ง
 
-เพิ่มไลบรารีนี้ใน `pubspec.yaml` ของโปรเจกต์ของคุณ:
+เพิ่ม SnapLib ลงใน `pubspec.yaml` ของโปรเจกต์ของคุณ:
 
 ```yaml
 dependencies:
@@ -12,141 +12,160 @@ dependencies:
     path: ../snap_lib
 ```
 
-## การใช้งาน
+---
 
-### การตั้งค่าการสแกนใบหน้า (ScanFaceSettings)
+## 📌 ฟังก์ชันการประมวลผลภาพ
+
+### 🖼 processImage (ปรับแต่งภาพ)
+
+ใช้สำหรับปรับแกมมา ลดเสียงรบกวน และเพิ่มความคมชัด
 
 ```dart
-enum FaceSnapMode { normal, strict }
+static Future<dynamic> processImage(
+  Uint8List imageBytes, {
+  double gamma = 1.0,
+  int d = 9,
+  double sigmaColor = 75.0,
+  double sigmaSpace = 75.0,
+  double sharpenStrength = 1.0,
+  double blurKernelSize = 3.0,
+  bool applyGamma = true,
+  bool reduceNoise = true,
+  bool enhanceSharpen = true,
+  bool returnBase64 = true,
+}) async
+```
 
-class ScanFaceSettings {
-  final String guideText;
-  final String instructionText;
-  final String successText;
-  final int borderColorSuccess;
-  final int borderColorDefault;
-  final int textColorDefault;
-  final int textColorSuccess;
-  final double guideFontSize;
-  final double instructionFontSize;
-  final int guideTextColor;
-  final int instructionTextColor;
-  final FaceSnapMode faceSnapMode;
+**🔹 Parameter อธิบาย**
 
-  ScanFaceSettings({
-    this.guideText = "ให้ใบหน้าอยู่ในกรอบที่กำหนด",
-    this.instructionText = "ไม่มีปิดตา จมูก ปาก และคาง",
-    this.successText = "ถือค้างไว้",
-    this.borderColorSuccess = 0xFF00FF00, // สีเขียว
-    this.borderColorDefault = 0xFFFF0000, // สีแดง
-    this.textColorDefault = 0xFFFFFFFF, // สีขาว
-    this.textColorSuccess = 0xFF00FF00, // สีเขียว
-    this.guideFontSize = 22.0,
-    this.instructionFontSize = 18.0,
-    this.guideTextColor = 0xFFFFFF00, // สีเหลือง
-    this.instructionTextColor = 0xFF00FFFF, // สีฟ้า
-    this.faceSnapMode = FaceSnapMode.normal,
-  });
+- `imageBytes` : ข้อมูลรูปภาพที่รับเข้ามา
+- `gamma` : ค่าแกมมาสำหรับปรับแสง (ค่าเริ่มต้น 1.0)
+- `d` : ขนาดของเคอร์เนลสำหรับลดเสียงรบกวน (ค่าเริ่มต้น 9)
+- `sigmaColor`, `sigmaSpace` : ค่าการลดเสียงรบกวนสีและเชิงพื้นที่
+- `sharpenStrength` : ค่าการเพิ่มความคมชัด (ค่าเริ่มต้น 1.0)
+- `blurKernelSize` : ขนาดของเคอร์เนลสำหรับเบลอภาพ
+- `applyGamma`, `reduceNoise`, `enhanceSharpen` : เปิด/ปิดฟีเจอร์แต่ละตัว
+- `returnBase64` : คืนค่าภาพเป็น Base64 หรือไม่
+
+**🔹 ตัวอย่างการใช้งาน**
+
+```dart
+final processedImage = await SnapLib.processImage(
+  imageBytes,
+  gamma: 2.0,
+  reduceNoise: true,
+  enhanceSharpen: true,
+);
+```
+
+---
+
+### 🆔 processFontCard (ประมวลผลบัตรด้านหน้า)
+
+```dart
+static Future<dynamic> processFontCard(
+  Uint8List imageBytes, {
+  double snr = 0.0,
+  double contrast = 0.0,
+  double brightness = 0.0,
+  double glarePercent = 0.0,
+  String resolution = "0x0",
+  double gamma = 1.0,
+  bool useBilateralFilter = true,
+  int d = 9,
+  double sigmaColor = 75.0,
+  double sigmaSpace = 75.0,
+  bool useSharpening = true,
+  double sharpenStrength = 1.0,
+  double blurKernelSize = 3.0,
+  bool returnBase64 = true,
+}) async
+```
+
+**🔹 Parameter อธิบาย**
+
+- `snr`, `contrast`, `brightness`, `glarePercent` : คุณภาพของภาพที่ได้รับ
+- `resolution` : ขนาดของภาพ เช่น "1920x1080"
+- `gamma`, `useBilateralFilter`, `useSharpening` : เปิด/ปิดฟีเจอร์ที่ต้องการ
+- `d`, `sigmaColor`, `sigmaSpace` : ค่าการลด Noise
+- `sharpenStrength`, `blurKernelSize` : ค่าการเพิ่มความคมชัด
+- `returnBase64` : คืนค่าภาพเป็น Base64 หรือไม่
+
+---
+
+### 🔍 isImageQualityAcceptable (ตรวจสอบคุณภาพของภาพ)
+
+```dart
+static Future<bool> isImageQualityAcceptable(
+  Uint8List imageBytes, {
+  double snr = 0.0,
+  double contrast = 0.0,
+  double brightness = 0.0,
+  double glarePercent = 0.0,
+  String resolution = "0x0",
+  int minResolution = 500,
+  double snrThreshold = 3.0,
+  double contrastThreshold = 50.0,
+  int maxBrightness = 200,
+  double maxGlarePercent = 1.0,
+}) async
+```
+
+---
+
+## 🎨 ฟังก์ชันเสริม
+
+### 🔥 applyGammaCorrection (ปรับค่าความสว่างของภาพ)
+
+```dart
+static Future<dynamic> applyGammaCorrection(
+    Uint8List imageBytes, double gamma,
+    {bool returnBase64 = true}) async
+```
+
+### 🧹 reduceNoise (ลดเสียงรบกวน)
+
+```dart
+static Future<dynamic> reduceNoise(
+  Uint8List imageBytes, {
+  int d = 9,
+  double sigmaColor = 75.0,
+  double sigmaSpace = 75.0,
+  bool returnBase64 = true,
+}) async
+```
+
+### ✨ enhanceSharpen (เพิ่มความคมชัด)
+
+```dart
+static Future<dynamic> enhanceSharpen(
+  Uint8List imageBytes, {
+  double strength = 1.5,
+  double blurKernelSize = 5.0,
+  bool returnBase64 = true,
+}) async
+```
+
+---
+
+## 📌 ตัวอย่างการสแกนใบหน้า
+
+```dart
+void startFaceScan() {
+  SnapLib.startFaceSnap(
+    faceSettings: ScanFaceSettings(
+      guideText: "ให้ใบหน้าอยู่ในกรอบ",
+      successText: "สำเร็จ!",
+      borderColorDefault: 0xFF008080,
+      borderColorSuccess: 0xFF00FF00,
+    ),
+  );
 }
 ```
 
-### การตั้งค่าการสแกนบัตร (FrontSnapSettings)
+---
 
-```dart
-class FrontSnapSettings {
-  final String titleMessage;
-  final double titleFontSize;
-  final double guideMessageFontSize;
-  final String initialMessage;
-  final String foundMessage;
-  final String notFoundMessage;
-  final SnapMode snapMode;
-
-  FrontSnapSettings({
-    required this.titleMessage,
-    required this.titleFontSize,
-    required this.guideMessageFontSize,
-    required this.initialMessage,
-    required this.foundMessage,
-    required this.notFoundMessage,
-    required this.snapMode,
-  });
-}
-```
-
-### การตั้งค่าการประมวลผลภาพ (ImageProcessingSettings)
-
-```dart
-class ImageProcessingSettings {
-  final bool isDetectNoise;
-  final bool isDetectBrightness;
-  final bool isDetectGlare;
-  final double maxNoiseValue;
-  final double maxBrightnessValue;
-  final double minBrightnessValue;
-  final double maxGlarePercent;
-
-  ImageProcessingSettings({
-    required this.isDetectNoise,
-    required this.isDetectBrightness,
-    required this.isDetectGlare,
-    required this.maxNoiseValue,
-    required this.maxBrightnessValue,
-    required this.minBrightnessValue,
-    required this.maxGlarePercent,
-  });
-}
-```
-
-### การตั้งค่าข้อความเตือน (WarningMessages)
-
-```dart
-class WarningMessages {
-  final String warningMessage;
-  final String warningNoise;
-  final String warningBrightnessOver;
-  final String warningBrightnessLower;
-  final String warningGlare;
-
-  WarningMessages({
-    required this.warningMessage,
-    required this.warningNoise,
-    required this.warningBrightnessOver,
-    required this.warningBrightnessLower,
-    required this.warningGlare,
-  });
-}
-```
-
-### การตั้งค่าการแสดงผลของ Dialog (DialogStyleSettings)
-
-```dart
-class DialogStyleSettings {
-  final int backgroundColor;
-  final int titleColor;
-  final int subtitleColor;
-  final int buttonConfirmColor;
-  final int buttonRetakeColor;
-  final int buttonTextColor;
-  final String extraMessage;
-  final int extraMessageColor;
-
-  DialogStyleSettings({
-    required this.backgroundColor,
-    required this.titleColor,
-    required this.subtitleColor,
-    required this.buttonConfirmColor,
-    required this.buttonRetakeColor,
-    required this.buttonTextColor,
-    required this.extraMessage,
-    required this.extraMessageColor,
-  });
-}
-```
-
-## ตัวอย่างการใช้งาน
-
-### การสแกนบัตร
+## 📌 ตัวอย่างการสแกนบัตร
 
 ```dart
 void startCardScan() {
@@ -160,51 +179,8 @@ void startCardScan() {
       notFoundMessage: "กรุณาวางบัตรในกรอบ",
       snapMode: SnapMode.front,
     ),
-    ImageProcessingSettings(
-      isDetectNoise: true,
-      isDetectBrightness: true,
-      isDetectGlare: true,
-      maxNoiseValue: 3.5,
-      maxBrightnessValue: 130.0,
-      minBrightnessValue: 90.0,
-      maxGlarePercent: 1.0,
-    ),
-    WarningMessages(
-      warningMessage: "⚠️ กรุณาปรับแสงให้เหมาะสม",
-      warningNoise: "⚠️ โปรดลด Noise",
-      warningBrightnessOver: "⚠️ แสงจ้าเกินไป",
-      warningBrightnessLower: "⚠️ แสงน้อยเกินไป",
-      warningGlare: "⚠️ ลดแสงสะท้อน",
-    ),
-    DialogStyleSettings(
-      backgroundColor: 0xFFFFFFFF,
-      titleColor: 0xFF000000,
-      subtitleColor: 0xFFFFFFFF,
-      buttonConfirmColor: 0xFF00FF00,
-      buttonRetakeColor: 0xFFFF0000,
-      buttonTextColor: 0xFF000000,
-      extraMessage: "ตรวจสอบให้แน่ใจว่ารูปภาพสามารถอ่านได้ชัดเจน",
-      extraMessageColor: 0xFFFFA500,
-    ),
   );
 }
 ```
 
-### การสแกนใบหน้า
-
-```dart
-void startFaceScan() {
-  SnapLib.startFaceSnap(
-    titleMessage: "สแกนหน้า",
-    initialMessage: "กรุณาวางใบหน้าในกรอบ",
-    foundMessage: "ถือนิ่งๆ",
-    notFoundMessage: "กรุณาวางใบหน้าในกรอบ",
-    snapMode: 'strict',
-  );
-}
-```
-
-## การสนับสนุน
-
-หากคุณมีคำถามหรือพบปัญหาใดๆ สามารถติดต่อเราได้ที่ [support@example.com](mailto:support@example.com)
 
