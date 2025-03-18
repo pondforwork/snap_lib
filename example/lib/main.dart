@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
 
 class HomeScreen extends StatelessWidget {
   // Front & Back Card Scan Settings
-  final FrontSnapSettings settingsFront = FrontSnapSettings(
+  final CardSnapSettings settingsFront = CardSnapSettings(
     titleMessage: "สแกนหน้าบัตร",
     titleFontSize: 10,
     guideMessageFontSize: 30,
@@ -48,7 +48,7 @@ class HomeScreen extends StatelessWidget {
     snapMode: SnapMode.front,
   );
 
-  final FrontSnapSettings settingsBack = FrontSnapSettings(
+  final CardSnapSettings settingsBack = CardSnapSettings(
     titleMessage: "สแกนหลังบัตร",
     titleFontSize: 17,
     guideMessageFontSize: 23,
@@ -120,7 +120,7 @@ class HomeScreen extends StatelessWidget {
         onPressed: () {
           // Default to front card scan
           SnapLib.startCardSnap(
-              FrontSnapSettings(
+              CardSnapSettings(
                 titleMessage: "หลัง",
                 initialMessage: "กรุณาวางบัตรในกรอบ",
                 foundMessage: "พบบัตร ถือค้างไว้",
